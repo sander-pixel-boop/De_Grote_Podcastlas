@@ -38,15 +38,17 @@ fig = px.choropleth(
 )
 
 if not steden_df.empty:
-    # Verwijder lege waarden als zekerheid
-    steden_df = steden_df.dropna(subset=['Latitude', 'Longitude'])
-    fig.add_scattergeo(
-        lon=steden_df["Longitude"],
-        lat=steden_df["Latitude"],
-        hoverinfo="text",
-        text=steden_df["Weergave_Naam"] + "<br>" + steden_df["Aflevering"],
-        marker=dict(size=8, color="red", line=dict(width=1, color="darkred"))
-    )
+    if 'Latitude' in steden_df.columns and 'Longitude' in steden_df.columns:
+        steden_df = steden_df.dropna(subset=['Latitude', 'Longitude'])
+        fig.add_scattergeo(
+            lon=steden_df["Longitude"],
+            lat=steden_df["Latitude"],
+            hoverinfo="text",
+            text=steden_df["Weergave_Naam"] + "<br>" + steden_df["Aflevering"],
+            marker=dict(size=8, color="red", line=dict(width=1, color="darkred"))
+        )
+    else:
+        st.error("Let op: De kolommen 'Latitude' en 'Longitude' ontbreken in je data.csv bestand.")
 
 fig.update_layout(
     coloraxis_showscale=False,
