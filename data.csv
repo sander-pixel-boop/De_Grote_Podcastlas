@@ -6,7 +6,7 @@ Molukken,Maluku,Stad,Rafelrandjes 6,1
 Lapland,Lapland,Stad,Rafelrandjes 5,1
 Pakistan,Pakistan,Land,Afl. 148,1
 Guinee-Bissau,Guinea-Bissau,Land,Afl. 147,1
-Zuid-Chinese Zee,South China Sea,Stad,Special 17,1
+Zuid-Chinese Zee,South China Sea,Stad,Special #17,1
 Moldavië,Moldova,Land,Afl. 146,1
 Los Angeles,Los Angeles,Stad,Wereldstad 14,1
 Rome,Rome,Stad,Wereldstad 13,1
@@ -14,7 +14,7 @@ Malawi,Malawi,Land,Afl. 145,1
 Nieuw-Zeeland,New Zealand,Land,Afl. 144,1
 Syrië,Syria,Land,Afl. 143,1
 Andorra,Andorra,Land,Afl. 142,1
-Suriname,Suriname,Land,Special 16,1
+Suriname,Suriname,Land,Special #16,1
 Suriname,Suriname,Land,Afl. 141,1
 Republiek Congo,Republic of the Congo,Land,Afl. 140,1
 Kiribati,Kiribati,Land,Afl. 139,1
@@ -40,7 +40,7 @@ België,Belgium,Land,Kids 3,1
 Frankrijk,France,Land,Kids 2,1
 Italië,Italy,Land,Kids 1,1
 Thailand,Thailand,Land,Afl. 136,1
-Amsterdam,Amsterdam,Stad,Special 14,1
+Amsterdam,Amsterdam,Stad,Special #14,1
 Togo,Togo,Land,Afl. 135,1
 Bahrein,Bahrain,Land,Afl. 134,1
 Noord-Macedonië,North Macedonia,Land,Afl. 133,1
@@ -95,7 +95,7 @@ Luxemburg,Luxembourg,Land,Afl. 95,1
 Burkina Faso,Burkina Faso,Land,Afl. 94,1
 Bahama's,Bahamas,Land,Afl. 93,1
 Griekenland,Greece,Land,Afl. 92,1
-Verenigde Staten,United States,Land,Special 10,1
+Verenigde Staten,United States,Land,Special #10,1
 Burundi,Burundi,Land,Afl. 91,1
 Turkmenistan,Turkmenistan,Land,Afl. 90,1
 Tonga,Tonga,Land,Afl. 89,1
@@ -129,19 +129,19 @@ Roemenië,Romania,Land,Afl. 66,1
 Namibië,Namibia,Land,Afl. 65,1
 Canada,Canada,Land,Afl. 64,1
 Vanuatu,Vanuatu,Land,Afl. 63,1
-China,China,Land,Special 7,1
+China,China,Land,Special #7,1
 Oeganda,Uganda,Land,Afl. 62,1
 Myanmar,Myanmar,Land,Afl. 61,1
 Grenada,Grenada,Land,Afl. 60,1
 Italië,Italy,Land,Afl. 59,1
 Jemen,Yemen,Land,Afl. 58,1
 Sao Tomé en Principe,Sao Tome and Principe,Land,Afl. 57,1
-Chili,Chile,Land,Special 6,1
+Chili,Chile,Land,Special #6,1
 Chili,Chile,Land,Afl. 56,1
 Malta,Malta,Land,Afl. 55,1
 Panama,Panama,Land,Afl. 54,1
 Mali,Mali,Land,Afl. 53,1
-Turkije,Turkey,Land,Special 5,1
+Turkije,Turkey,Land,Special #5,1
 Turkije,Turkey,Land,Afl. 52,1
 Utrecht,Utrecht,Stad,Provincie 12,1
 Flevoland,Flevoland,Stad,Provincie 11,1
@@ -167,7 +167,7 @@ Bosnië-Herzegovina,Bosnia and Herzegovina,Land,Afl. 45,1
 Mongolië,Mongolia,Land,Afl. 44,1
 Seychellen,Seychelles,Land,Afl. 43,1
 Qatar,Qatar,Land,Afl. 42,1
-Oekraïne,Ukraine,Land,Special 3,1
+Oekraïne,Ukraine,Land,Special #3,1
 Noorwegen,Norway,Land,Afl. 41,1
 Democratische Republiek Congo,Democratic Republic of the Congo,Land,Afl. 40,1
 Brazilië,Brazil,Land,Afl. 39,1
