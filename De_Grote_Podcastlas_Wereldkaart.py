@@ -6,8 +6,10 @@ import plotly.express as px
 def load_data():
     df = pd.read_csv("data.csv")
     df.columns = df.columns.str.strip()
-    # Haal alleen het nummer uit de string voor de weergave
-    df["Hover_Aflevering"] = "aflevering #" + df["Aflevering"].str.extract(r'(\d+)', expand=False)
+    
+    # Maak een nieuwe kolom voor de hover-weergave
+    # Dit zet "Wereldstad #14" om naar "wereldstad #14"
+    df["Hover_Info"] = df["Aflevering"].str.lower()
     return df
 
 st.set_page_config(page_title="De Grote Podcastlas", layout="wide")
@@ -37,20 +39,24 @@ else:
     landen_df = df
     steden_df = pd.DataFrame()
 
+# Kaart voor de landen (vlakken)
 fig = px.choropleth(
     landen_df,
     locations="Locatie",
     locationmode="country names",
     color="Waarde",
     hover_name="Weergave_Naam",
-    custom_data=["Hover_Aflevering"],
+    custom_data=["Hover_Info"],
     projection=gekozen_projectie, 
     color_continuous_scale="greens"
 )
 
-# Forceer alleen de naam en het afleveringnummer in de hover, en verwijder extra informatie
-fig.update_traces(hovertemplate="<b>%{hovertext}</b><br>%{customdata[0]}<extra></extra>")
+# Hover instellingen voor landen: Alleen Naam en de aangepaste afleveringtekst
+fig.update_traces(
+    hovertemplate="<b>%{hovertext}</b><br>%{customdata[0]}<extra></extra>"
+)
 
+# Toevoegen van de steden/punten
 if not steden_df.empty:
     if 'Latitude' in steden_df.columns and 'Longitude' in steden_df.columns:
         steden_df = steden_df.dropna(subset=['Latitude', 'Longitude'])
@@ -58,11 +64,11 @@ if not steden_df.empty:
             lon=steden_df["Longitude"],
             lat=steden_df["Latitude"],
             hoverinfo="text",
-            text="<b>" + steden_df["Weergave_Naam"] + "</b><br>" + steden_df["Hover_Aflevering"],
+            text="<b>" + steden_df["Weergave_Naam"] + "</b><br>" + steden_df["Hover_Info"],
             marker=dict(size=8, color="red", line=dict(width=1, color="darkred"))
         )
     else:
-        st.error("Let op: De kolommen 'Latitude' en 'Longitude' ontbreken nog steeds in de data.")
+        st.error("Let op: De kolommen 'Latitude' en 'Longitude' ontbreken in de data.")
 
 fig.update_layout(
     coloraxis_showscale=False,
