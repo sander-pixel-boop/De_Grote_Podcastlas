@@ -7,12 +7,7 @@ import requests
 
 @st.cache_data
 def load_data():
-    return pd.DataFrame({
-        "Locatie": ["Albania", "Rome", "Bhutan", "Antwerp", "Uzbekistan"], 
-        "Type": ["Land", "Stad", "Land", "Stad", "Land"],
-        "Aflevering": ["Afl. 1", "Afl. 5", "Afl. 12", "Afl. 18", "Afl. 22"],
-        "Waarde": [1, 1, 1, 1, 1] 
-    })
+    return pd.read_csv("data.csv")
 
 @st.cache_data
 def get_coordinates(city_name):
@@ -54,8 +49,8 @@ for index, row in steden_df.iterrows():
         folium.CircleMarker(
             location=[row["Latitude"], row["Longitude"]],
             radius=6,
-            popup=f"<b>{row['Locatie']}</b><br>{row['Aflevering']}",
-            tooltip=row["Locatie"],
+            popup=f"<b>{row['Weergave_Naam']}</b><br>{row['Aflevering']}",
+            tooltip=row['Weergave_Naam'],
             color="red",
             fill=True,
             fill_color="red",
@@ -63,4 +58,4 @@ for index, row in steden_df.iterrows():
         ).add_to(m)
 
 st_folium(m, width=1000, height=600)
-st.dataframe(df.drop(columns=["Waarde", "Coordinates"], errors='ignore'))
+st.dataframe(df[["Weergave_Naam", "Type", "Aflevering"]])
