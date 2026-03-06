@@ -94,7 +94,6 @@ if selected_name and weergave == "3D (Wereldbol)":
     if not sel_data.empty:
         lat = sel_data.iloc[0]["Latitude"]
         lon = sel_data.iloc[0]["Longitude"]
-        # Draait alleen als er coördinaten in data.csv staan
         if pd.notna(lat) and pd.notna(lon):
             fig.update_geos(projection_rotation=dict(lon=lon, lat=lat, roll=0))
 
