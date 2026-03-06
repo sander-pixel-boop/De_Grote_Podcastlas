@@ -23,7 +23,7 @@ st.set_page_config(page_title="De Grote Podcastlas", layout="wide")
 titel_html = """
 <div style="display: flex; align-items: center; margin-bottom: 20px;">
     <a href="https://www.grotepodcastlas.nl/" target="_blank">
-        <img src="https://static.wixstatic.com/media/252b43_81804d09a5b3484f9b8c0a294d7b1a6c~mv2.png/v1/fill/w_120,h_120,al_c,q_85,usm_0.66_1.00_0.01,enc_auto/Podcastlas%20logo.png" 
+        <img src="https://images.squarespace-cdn.com/content/v1/605b00c62e59e93b1ebed0ad/1616576822453-AOT2H8P3W06P2ZJ17X8I/Podcastlas+logo.png" 
              alt="Logo De Grote Podcastlas" 
              style="height: 60px; margin-right: 20px; border-radius: 50%;">
     </a>
@@ -91,7 +91,7 @@ if st.session_state.selected_name:
             if weergave == "3D (Wereldbol)":
                 fig.update_geos(projection_rotation=dict(lon=lon, lat=lat, roll=0))
             else:
-                # Inzoom-factor vergroot naar 5 voor 2D
+                # Inzoom-factor 5 voor 2D
                 fig.update_geos(center=dict(lon=lon, lat=lat), projection_scale=5)
 
 # --- 2. KAART TONEN & KLIK UITLEZEN ---
