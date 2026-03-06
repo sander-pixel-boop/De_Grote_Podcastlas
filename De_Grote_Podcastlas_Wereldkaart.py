@@ -5,8 +5,9 @@ import plotly.express as px
 @st.cache_data
 def load_data():
     df = pd.read_csv("data.csv")
-    # Verwijder onzichtbare spaties rondom kolomnamen voor de zekerheid
     df.columns = df.columns.str.strip()
+    # Haal alleen het nummer uit de string voor de weergave
+    df["Hover_Aflevering"] = "aflevering #" + df["Aflevering"].str.extract(r'(\d+)', expand=False)
     return df
 
 st.set_page_config(page_title="De Grote Podcastlas", layout="wide")
@@ -42,10 +43,13 @@ fig = px.choropleth(
     locationmode="country names",
     color="Waarde",
     hover_name="Weergave_Naam",
-    hover_data={"Waarde": False, "Locatie": False, "Categorie": True, "Aflevering": True},
+    custom_data=["Hover_Aflevering"],
     projection=gekozen_projectie, 
     color_continuous_scale="greens"
 )
+
+# Forceer alleen de naam en het afleveringnummer in de hover, en verwijder extra informatie
+fig.update_traces(hovertemplate="<b>%{hovertext}</b><br>%{customdata[0]}<extra></extra>")
 
 if not steden_df.empty:
     if 'Latitude' in steden_df.columns and 'Longitude' in steden_df.columns:
@@ -54,7 +58,7 @@ if not steden_df.empty:
             lon=steden_df["Longitude"],
             lat=steden_df["Latitude"],
             hoverinfo="text",
-            text=steden_df["Weergave_Naam"] + "<br>" + steden_df["Aflevering"],
+            text="<b>" + steden_df["Weergave_Naam"] + "</b><br>" + steden_df["Hover_Aflevering"],
             marker=dict(size=8, color="red", line=dict(width=1, color="darkred"))
         )
     else:
@@ -71,4 +75,4 @@ fig.update_layout(
 )
 
 st.plotly_chart(fig, use_container_width=True)
-st.dataframe(df)
+st.dataframe(df[["Weergave_Naam", "Categorie", "Aflevering"]])
