@@ -3,6 +3,11 @@ import pandas as pd
 import plotly.express as px
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 
+# Initialiseer het geheugen voor de selectie
+if 'selected_name' not in st.session_state:
+    st.session_state.selected_name = None
+
+@st.cache_data
 def load_data():
     df = pd.read_csv("data.csv")
     df.columns = df.columns.str.strip().str.replace('^[^a-zA-Z0-9]+', '', regex=True)
@@ -24,43 +29,13 @@ with col2:
     categorie_opties = ["Alles"] + list(df["Categorie"].unique())
     gekozen_categorie = st.selectbox("Kies categorie:", categorie_opties)
 
-# Reserveer een container bovenaan de pagina voor de kaart
-kaart_container = st.container()
-
 filtered_df = df.copy()
 if gekozen_categorie != "Alles":
     filtered_df = filtered_df[filtered_df["Categorie"] == gekozen_categorie]
 
-df_display = filtered_df[["Weergave_Naam", "Categorie", "Aflevering"]].copy()
-df_display = df_display.rename(columns={"Weergave_Naam": "Naam"})
-df_display.index = range(1, len(df_display) + 1)
-
-# Tabel configuratie (zonder subheader tekst)
-gb = GridOptionsBuilder.from_dataframe(df_display)
-gb.configure_selection(selection_mode="single", use_checkbox=False)
-gridOptions = gb.build()
-
-grid_response = AgGrid(
-    df_display,
-    gridOptions=gridOptions,
-    update_mode=GridUpdateMode.SELECTION_CHANGED,
-    fit_columns_on_grid_load=True,
-    theme='streamlit'
-)
-
-# Veilige check om de selectie uit de tabel te halen
-selected_name = None
-sel_rows = grid_response.get('selected_rows')
-
-if sel_rows is not None:
-    if isinstance(sel_rows, pd.DataFrame):
-        if not sel_rows.empty:
-            selected_name = sel_rows.iloc[0]["Naam"]
-    elif isinstance(sel_rows, list) and len(sel_rows) > 0:
-        selected_name = sel_rows[0]["Naam"]
-
+# --- 1. KAART OPBOUWEN ---
 gekozen_projectie = "orthographic" if weergave == "3D (Wereldbol)" else "natural earth"
-filtered_df["Highlight"] = filtered_df["Weergave_Naam"].apply(lambda x: 2 if x == selected_name else 1)
+filtered_df["Highlight"] = filtered_df["Weergave_Naam"].apply(lambda x: 2 if x == st.session_state.selected_name else 1)
 
 landen_df = filtered_df[filtered_df["Kaartweergave"] == "Land"]
 steden_df = filtered_df[filtered_df["Kaartweergave"] == "Punt"].copy()
@@ -79,8 +54,8 @@ fig = px.choropleth(
 fig.update_traces(hovertemplate="<b>%{hovertext}</b><br>%{customdata[0]}<extra></extra>")
 
 if not steden_df.empty:
-    steden_df["Point_Color"] = steden_df["Weergave_Naam"].apply(lambda x: "yellow" if x == selected_name else "red")
-    steden_df["Point_Size"] = steden_df["Weergave_Naam"].apply(lambda x: 15 if x == selected_name else 8)
+    steden_df["Point_Color"] = steden_df["Weergave_Naam"].apply(lambda x: "yellow" if x == st.session_state.selected_name else "red")
+    steden_df["Point_Size"] = steden_df["Weergave_Naam"].apply(lambda x: 15 if x == st.session_state.selected_name else 8)
     
     fig.add_scattergeo(
         lon=steden_df["Longitude"],
@@ -90,15 +65,11 @@ if not steden_df.empty:
         marker=dict(size=steden_df["Point_Size"], color=steden_df["Point_Color"], line=dict(width=1, color="black"))
     )
 
-# Kaart layout aanpassen (height zorgt ervoor dat hij groter is)
-fig.update_layout(
-    coloraxis_showscale=False, 
-    margin={"r":0,"t":0,"l":0,"b":0},
-    height=750 
-)
+fig.update_layout(coloraxis_showscale=False, margin={"r":0,"t":0,"l":0,"b":0}, height=750)
 
-if selected_name:
-    sel_data = df[df["Weergave_Naam"] == selected_name]
+# Roteren of inzoomen op basis van sessie status
+if st.session_state.selected_name:
+    sel_data = df[df["Weergave_Naam"] == st.session_state.selected_name]
     if not sel_data.empty:
         lat = sel_data.iloc[0]["Latitude"]
         lon = sel_data.iloc[0]["Longitude"]
@@ -109,9 +80,63 @@ if selected_name:
                 fig.update_geos(projection_rotation=dict(lon=lon, lat=lat, roll=0))
             else:
                 fig.update_geos(center=dict(lon=lon, lat=lat), projection_scale=4)
-        else:
-            st.warning(f"Geen coördinaten in data.csv gevonden voor {selected_name}.")
 
-# Teken de kaart in de gereserveerde ruimte bovenaan
-with kaart_container:
-    st.plotly_chart(fig, use_container_width=True)
+# --- 2. KAART TONEN & KLIK UITLEZEN ---
+map_selection = st.plotly_chart(fig, use_container_width=True, on_select="rerun", selection_mode="points")
+
+# Verwerk een klik op de kaart
+if map_selection and "selection" in map_selection and map_selection["selection"].get("points"):
+    clicked_text = map_selection["selection"]["points"][0]["hovertext"]
+    
+    # Filter HTML-bolding eruit als we op een stip/stad klikken
+    if "<b>" in clicked_text:
+        clicked_name_clean = clicked_text.split("</b>")[0].replace("<b>", "")
+    else:
+        clicked_name_clean = clicked_text
+
+    # Update state en forceer een herstart om de tabel te synchroniseren
+    if st.session_state.selected_name != clicked_name_clean:
+        st.session_state.selected_name = clicked_name_clean
+        st.rerun()
+
+# --- 3. TABEL OPBOUWEN & PRE-SELECTIE INSTELLEN ---
+df_display = filtered_df[["Weergave_Naam", "Categorie", "Aflevering"]].copy()
+df_display = df_display.rename(columns={"Weergave_Naam": "Naam"})
+df_display.index = range(1, len(df_display) + 1)
+
+gb = GridOptionsBuilder.from_dataframe(df_display)
+
+# Als een land in de sessie is geselecteerd, vertel de tabel welke rij hij blauw moet maken
+if st.session_state.selected_name in df_display["Naam"].values:
+    # AgGrid index is 0-based vanaf de *gefilterde* lijst
+    row_idx = df_display.reset_index().index[df_display["Naam"] == st.session_state.selected_name].tolist()
+    if row_idx:
+        gb.configure_selection(selection_mode="single", use_checkbox=False, pre_selected_rows=row_idx)
+else:
+    gb.configure_selection(selection_mode="single", use_checkbox=False)
+
+gridOptions = gb.build()
+
+# --- 4. TABEL TONEN & KLIK UITLEZEN ---
+grid_response = AgGrid(
+    df_display,
+    gridOptions=gridOptions,
+    update_mode=GridUpdateMode.SELECTION_CHANGED,
+    fit_columns_on_grid_load=True,
+    theme='streamlit'
+)
+
+# Verwerk een klik in de tabel
+if grid_response.get('selected_rows'):
+    sel = grid_response['selected_rows']
+    clicked_table_name = None
+    
+    if isinstance(sel, pd.DataFrame) and not sel.empty:
+        clicked_table_name = sel.iloc[0]["Naam"]
+    elif isinstance(sel, list) and len(sel) > 0:
+        clicked_table_name = sel[0]["Naam"]
+
+    # Update state en forceer een herstart om de kaart te synchroniseren
+    if clicked_table_name and st.session_state.selected_name != clicked_table_name:
+        st.session_state.selected_name = clicked_table_name
+        st.rerun()
