@@ -86,8 +86,7 @@ if not steden_df.empty:
         marker=dict(size=steden_df["Point_Size"], color=steden_df["Point_Color"], line=dict(width=1, color="black"))
     )
 
-# Gecombineerde en robuuste geo-configuratie
-geo_config = dict(
+fig.update_geos(
     showcoastlines=True, coastlinecolor="Black",
     showland=True, landcolor="lightgrey",
     showocean=True, oceancolor="azure"
@@ -99,22 +98,14 @@ if selected_name:
         lat = sel_data.iloc[0]["Latitude"]
         lon = sel_data.iloc[0]["Longitude"]
         if pd.notna(lat) and pd.notna(lon):
-            # Forceer conversie naar getallen (voorkomt willekeurig gedrag door tekst-parsing)
             lat = float(lat)
             lon = float(lon)
             
             if weergave == "3D (Wereldbol)":
-                geo_config["projection_rotation"] = dict(lon=lon, lat=lat, roll=0)
-                # Voorkomt dat de kaart uit het lood wordt getrokken
-                geo_config["center"] = dict(lat=0, lon=0) 
-                # Optioneel: iets inzoomen op de globe
-                geo_config["projection_scale"] = 1.2 
+                fig.update_geos(projection_rotation=dict(lon=lon, lat=lat, roll=0))
             else:
-                # 2D map centreren en flink inzoomen
-                geo_config["center"] = dict(lat=lat, lon=lon)
-                geo_config["projection_scale"] = 3.5 
+                fig.update_geos(center=dict(lat=lat, lon=lon), projection_scale=3.5)
 
-fig.update_geos(**geo_config)
 fig.update_layout(coloraxis_showscale=False, margin={"r":0,"t":0,"l":0,"b":0})
 
 st.plotly_chart(fig, use_container_width=True)
