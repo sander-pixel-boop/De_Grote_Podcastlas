@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
+from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, JsCode
 
 # Initialiseer het geheugen voor de selectie
 if 'selected_name' not in st.session_state:
@@ -84,17 +84,14 @@ if st.session_state.selected_name:
 # --- 2. KAART TONEN & KLIK UITLEZEN ---
 map_selection = st.plotly_chart(fig, use_container_width=True, on_select="rerun", selection_mode="points")
 
-# Verwerk een klik op de kaart
 if map_selection and "selection" in map_selection and map_selection["selection"].get("points"):
     clicked_text = map_selection["selection"]["points"][0]["hovertext"]
     
-    # Filter HTML-bolding eruit als we op een stip/stad klikken
     if "<b>" in clicked_text:
         clicked_name_clean = clicked_text.split("</b>")[0].replace("<b>", "")
     else:
         clicked_name_clean = clicked_text
 
-    # Update state en forceer een herstart om de tabel te synchroniseren
     if st.session_state.selected_name != clicked_name_clean:
         st.session_state.selected_name = clicked_name_clean
         st.rerun()
@@ -106,12 +103,20 @@ df_display.index = range(1, len(df_display) + 1)
 
 gb = GridOptionsBuilder.from_dataframe(df_display)
 
-# Als een land in de sessie is geselecteerd, vertel de tabel welke rij hij blauw moet maken
 if st.session_state.selected_name in df_display["Naam"].values:
-    # AgGrid index is 0-based vanaf de *gefilterde* lijst
     row_idx = df_display.reset_index().index[df_display["Naam"] == st.session_state.selected_name].tolist()
     if row_idx:
         gb.configure_selection(selection_mode="single", use_checkbox=False, pre_selected_rows=row_idx)
+        
+        # JavaScript injectie om daadwerkelijk naar de rij te scrollen
+        scroll_js = JsCode(f"""
+        function(params) {{
+            setTimeout(function() {{
+                params.api.ensureIndexVisible({row_idx[0]}, 'middle');
+            }}, 100);
+        }}
+        """)
+        gb.configure_grid_options(onFirstDataRendered=scroll_js, onRowDataUpdated=scroll_js)
 else:
     gb.configure_selection(selection_mode="single", use_checkbox=False)
 
@@ -123,10 +128,10 @@ grid_response = AgGrid(
     gridOptions=gridOptions,
     update_mode=GridUpdateMode.SELECTION_CHANGED,
     fit_columns_on_grid_load=True,
+    allow_unsafe_jscode=True,  # Noodzakelijk voor de auto-scroll
     theme='streamlit'
 )
 
-# Verwerk een klik in de tabel
 if grid_response.get('selected_rows'):
     sel = grid_response['selected_rows']
     clicked_table_name = None
@@ -136,7 +141,6 @@ if grid_response.get('selected_rows'):
     elif isinstance(sel, list) and len(sel) > 0:
         clicked_table_name = sel[0]["Naam"]
 
-    # Update state en forceer een herstart om de kaart te synchroniseren
     if clicked_table_name and st.session_state.selected_name != clicked_table_name:
         st.session_state.selected_name = clicked_table_name
         st.rerun()
