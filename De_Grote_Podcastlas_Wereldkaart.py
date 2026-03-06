@@ -110,16 +110,20 @@ if st.session_state.selected_name:
 map_selection = st.plotly_chart(fig, use_container_width=True, on_select="rerun", selection_mode="points")
 
 if map_selection and "selection" in map_selection and map_selection["selection"].get("points"):
-    clicked_text = map_selection["selection"]["points"][0]["hovertext"]
+    point_data = map_selection["selection"]["points"][0]
     
-    if "<b>" in clicked_text:
-        clicked_name_clean = clicked_text.split("</b>")[0].replace("<b>", "")
-    else:
-        clicked_name_clean = clicked_text
+    # Choropleth gebruikt 'hovertext', scattergeo gebruikt 'text'
+    clicked_text = point_data.get("hovertext") or point_data.get("text")
+    
+    if clicked_text:
+        if "<b>" in clicked_text:
+            clicked_name_clean = clicked_text.split("</b>")[0].replace("<b>", "")
+        else:
+            clicked_name_clean = clicked_text
 
-    if st.session_state.selected_name != clicked_name_clean:
-        st.session_state.selected_name = clicked_name_clean
-        st.rerun()
+        if st.session_state.selected_name != clicked_name_clean:
+            st.session_state.selected_name = clicked_name_clean
+            st.rerun()
 
 # --- 3. TABEL OPBOUWEN & PRE-SELECTIE INSTELLEN ---
 df_display = filtered_df[["Weergave_Naam", "Categorie", "Aflevering"]].copy()
