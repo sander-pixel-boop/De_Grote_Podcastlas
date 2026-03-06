@@ -1,9 +1,7 @@
 import streamlit as st
 import pandas as pd
-import folium
-from streamlit_folium import st_folium
+import plotly.express as px
 from geopy.geocoders import Nominatim
-import requests
 
 @st.cache_data
 def load_data():
@@ -27,41 +25,41 @@ df = load_data()
 landen_df = df[df["Type"] == "Land"]
 steden_df = df[df["Type"] == "Stad"].copy()
 
+# Coördinaten ophalen voor steden
 steden_df["Coordinates"] = steden_df["Locatie"].apply(get_coordinates)
 steden_df[["Latitude", "Longitude"]] = pd.DataFrame(steden_df["Coordinates"].tolist(), index=steden_df.index)
 
-# Aangepast: Gebruik Esri satellietbeelden voor een realistische weergave
-m = folium.Map(
-    location=[20, 0], 
-    zoom_start=2, 
-    tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-    attr="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
+# 1. Landen toevoegen via Plotly Choropleth
+fig = px.choropleth(
+    landen_df,
+    locations="Locatie",
+    locationmode="country names",
+    color="Waarde",
+    hover_name="Weergave_Naam",
+    hover_data={"Waarde": False, "Locatie": False, "Aflevering": True},
+    projection="natural earth", # Gebruik "orthographic" voor een 3D wereldbol
+    color_continuous_scale="greens"
 )
 
-geojson_url = "https://raw.githubusercontent.com/python-visualization/folium/master/examples/data/world-countries.json"
-folium.Choropleth(
-    geo_data=geojson_url,
-    data=landen_df,
-    columns=["Locatie", "Waarde"],
-    key_on="feature.properties.name",
-    fill_color="YlGn",
-    fill_opacity=0.5, # Iets transparanter gemaakt zodat de satellietkaart er beter doorheen schijnt
-    line_opacity=0.5,
-    legend_name="Besproken"
-).add_to(m)
+# 2. Steden toevoegen als punten
+fig.add_scattergeo(
+    lon=steden_df["Longitude"],
+    lat=steden_df["Latitude"],
+    hoverinfo="text",
+    text=steden_df["Weergave_Naam"] + "<br>" + steden_df["Aflevering"],
+    marker=dict(size=8, color="red", line=dict(width=1, color="darkred"))
+)
 
-for index, row in steden_df.iterrows():
-    if pd.notna(row["Latitude"]):
-        folium.CircleMarker(
-            location=[row["Latitude"], row["Longitude"]],
-            radius=6,
-            popup=f"<b>{row['Weergave_Naam']}</b><br>{row['Aflevering']}",
-            tooltip=row['Weergave_Naam'],
-            color="red",
-            fill=True,
-            fill_color="red",
-            fill_opacity=0.9
-        ).add_to(m)
+# 3. Kaart opmaak optimaliseren
+fig.update_layout(
+    coloraxis_showscale=False,
+    margin={"r":0,"t":0,"l":0,"b":0},
+    geo=dict(
+        showcoastlines=True, coastlinecolor="Black",
+        showland=True, landcolor="lightgrey",
+        showocean=True, oceancolor="azure"
+    )
+)
 
-st_folium(m, width=1000, height=600)
+st.plotly_chart(fig, use_container_width=True)
 st.dataframe(df[["Weergave_Naam", "Type", "Aflevering"]])
