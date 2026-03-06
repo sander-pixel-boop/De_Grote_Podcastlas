@@ -121,7 +121,8 @@ if st.session_state.selected_name:
     if not sel_row.empty and pd.notna(sel_row.iloc[0].get("Link")):
         link = sel_row.iloc[0]["Link"]
         if link:
-            st.link_button(f"🎧 Luister naar de aflevering over {st.session_state.selected_name}", link, type="primary")
+            # Tekst aangepast naar jouw wens
+            st.link_button(f"Ga naar de aflevering over {st.session_state.selected_name}", link, type="primary")
 
 # --- 4. TABEL OPBOUWEN ---
 df_display = filtered_df[["Weergave_Naam", "Categorie", "Aflevering"]].copy()
