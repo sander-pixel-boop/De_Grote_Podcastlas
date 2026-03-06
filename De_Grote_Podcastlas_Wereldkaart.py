@@ -1,9 +1,8 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, JsCode
+from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 
-# Initialiseer het geheugen voor de selectie
 if 'selected_name' not in st.session_state:
     st.session_state.selected_name = None
 
@@ -67,7 +66,6 @@ if not steden_df.empty:
 
 fig.update_layout(coloraxis_showscale=False, margin={"r":0,"t":0,"l":0,"b":0}, height=750)
 
-# Roteren of inzoomen op basis van sessie status
 if st.session_state.selected_name:
     sel_data = df[df["Weergave_Naam"] == st.session_state.selected_name]
     if not sel_data.empty:
@@ -99,24 +97,20 @@ if map_selection and "selection" in map_selection and map_selection["selection"]
 # --- 3. TABEL OPBOUWEN & PRE-SELECTIE INSTELLEN ---
 df_display = filtered_df[["Weergave_Naam", "Categorie", "Aflevering"]].copy()
 df_display = df_display.rename(columns={"Weergave_Naam": "Naam"})
+
+# Verplaats het geselecteerde item naar de top van de DataFrame
+if st.session_state.selected_name and st.session_state.selected_name in df_display["Naam"].values:
+    selected_row = df_display[df_display["Naam"] == st.session_state.selected_name]
+    other_rows = df_display[df_display["Naam"] != st.session_state.selected_name]
+    df_display = pd.concat([selected_row, other_rows])
+
 df_display.index = range(1, len(df_display) + 1)
 
 gb = GridOptionsBuilder.from_dataframe(df_display)
 
 if st.session_state.selected_name in df_display["Naam"].values:
-    row_idx = df_display.reset_index().index[df_display["Naam"] == st.session_state.selected_name].tolist()
-    if row_idx:
-        gb.configure_selection(selection_mode="single", use_checkbox=False, pre_selected_rows=row_idx)
-        
-        # JavaScript injectie om daadwerkelijk naar de rij te scrollen
-        scroll_js = JsCode(f"""
-        function(params) {{
-            setTimeout(function() {{
-                params.api.ensureIndexVisible({row_idx[0]}, 'middle');
-            }}, 100);
-        }}
-        """)
-        gb.configure_grid_options(onFirstDataRendered=scroll_js, onRowDataUpdated=scroll_js)
+    # De geselecteerde rij staat nu altijd op index 0
+    gb.configure_selection(selection_mode="single", use_checkbox=False, pre_selected_rows=[0])
 else:
     gb.configure_selection(selection_mode="single", use_checkbox=False)
 
@@ -128,7 +122,6 @@ grid_response = AgGrid(
     gridOptions=gridOptions,
     update_mode=GridUpdateMode.SELECTION_CHANGED,
     fit_columns_on_grid_load=True,
-    allow_unsafe_jscode=True,  # Noodzakelijk voor de auto-scroll
     theme='streamlit'
 )
 
