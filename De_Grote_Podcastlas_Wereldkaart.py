@@ -4,7 +4,10 @@ import plotly.express as px
 
 @st.cache_data
 def load_data():
-    return pd.read_csv("data.csv")
+    df = pd.read_csv("data.csv")
+    # Verwijder onzichtbare spaties rondom kolomnamen voor de zekerheid
+    df.columns = df.columns.str.strip()
+    return df
 
 st.set_page_config(page_title="De Grote Podcastlas", layout="wide")
 st.title("📍 De Grote Podcastlas Explorer")
@@ -15,16 +18,23 @@ col1, col2 = st.columns(2)
 with col1:
     weergave = st.radio("Kies kaartweergave:", ["2D (Plat)", "3D (Wereldbol)"], horizontal=True)
 with col2:
-    categorie_opties = ["Alles"] + list(df["Categorie"].unique())
-    gekozen_categorie = st.selectbox("Kies categorie:", categorie_opties)
+    if "Categorie" in df.columns:
+        categorie_opties = ["Alles"] + list(df["Categorie"].unique())
+        gekozen_categorie = st.selectbox("Kies categorie:", categorie_opties)
+    else:
+        gekozen_categorie = "Alles"
 
 gekozen_projectie = "orthographic" if weergave == "3D (Wereldbol)" else "natural earth"
 
-if gekozen_categorie != "Alles":
+if gekozen_categorie != "Alles" and "Categorie" in df.columns:
     df = df[df["Categorie"] == gekozen_categorie]
 
-landen_df = df[df["Kaartweergave"] == "Land"]
-steden_df = df[df["Kaartweergave"] == "Punt"].copy()
+if "Kaartweergave" in df.columns:
+    landen_df = df[df["Kaartweergave"] == "Land"]
+    steden_df = df[df["Kaartweergave"] == "Punt"].copy()
+else:
+    landen_df = df
+    steden_df = pd.DataFrame()
 
 fig = px.choropleth(
     landen_df,
@@ -48,7 +58,7 @@ if not steden_df.empty:
             marker=dict(size=8, color="red", line=dict(width=1, color="darkred"))
         )
     else:
-        st.error("Let op: De kolommen 'Latitude' en 'Longitude' ontbreken in je data.csv bestand.")
+        st.error("Let op: De kolommen 'Latitude' en 'Longitude' ontbreken nog steeds in de data.")
 
 fig.update_layout(
     coloraxis_showscale=False,
@@ -61,4 +71,4 @@ fig.update_layout(
 )
 
 st.plotly_chart(fig, use_container_width=True)
-st.dataframe(df[["Weergave_Naam", "Categorie", "Aflevering"]])
+st.dataframe(df)
