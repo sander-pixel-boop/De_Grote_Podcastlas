@@ -121,10 +121,9 @@ if st.session_state.selected_name:
     if not sel_row.empty and pd.notna(sel_row.iloc[0].get("Link")):
         link = sel_row.iloc[0]["Link"]
         if link:
-            # Tekst aangepast naar jouw wens
             st.link_button(f"Ga naar de aflevering over {st.session_state.selected_name}", link, type="primary")
 
-# --- 4. TABEL OPBOUWEN ---
+# --- 4. TABEL OPBOUWEN (Met breedtebeperking) ---
 df_display = filtered_df[["Weergave_Naam", "Categorie", "Aflevering"]].copy()
 df_display = df_display.rename(columns={"Weergave_Naam": "Naam"})
 
@@ -136,6 +135,12 @@ if st.session_state.selected_name and st.session_state.selected_name in df_displ
 df_display.index = range(1, len(df_display) + 1)
 
 gb = GridOptionsBuilder.from_dataframe(df_display)
+
+# Specifieke kolombreedtes instellen zodat de tabel smaller wordt
+gb.configure_column("Naam", width=200)
+gb.configure_column("Categorie", width=150)
+gb.configure_column("Aflevering", width=120)
+
 if st.session_state.selected_name in df_display["Naam"].values:
     gb.configure_selection(selection_mode="single", use_checkbox=False, pre_selected_rows=[0])
 else:
@@ -143,13 +148,18 @@ else:
 
 gridOptions = gb.build()
 
-grid_response = AgGrid(
-    df_display,
-    gridOptions=gridOptions,
-    update_mode=GridUpdateMode.SELECTION_CHANGED,
-    fit_columns_on_grid_load=True,
-    theme='streamlit'
-)
+# Gebruik columns om de tabel aan de linkerkant te houden en rechts witruimte te laten
+tabel_col, spacer = st.columns([2, 1])
+
+with tabel_col:
+    grid_response = AgGrid(
+        df_display,
+        gridOptions=gridOptions,
+        update_mode=GridUpdateMode.SELECTION_CHANGED,
+        fit_columns_on_grid_load=False, # Zet dit op False voor vaste breedtes
+        theme='streamlit',
+        height=400
+    )
 
 # --- 5. SELECTIE VERWERKEN ---
 selected_rows = grid_response.get('selected_rows')
