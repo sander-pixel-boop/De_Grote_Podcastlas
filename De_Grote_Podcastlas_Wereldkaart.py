@@ -3,6 +3,7 @@ import pandas as pd
 import plotly.express as px
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 
+# Initialiseer het geheugen voor de selectie
 if 'selected_name' not in st.session_state:
     st.session_state.selected_name = None
 
@@ -17,7 +18,19 @@ def load_data():
     return df
 
 st.set_page_config(page_title="De Grote Podcastlas", layout="wide")
-st.title("📍 De Grote Podcastlas Explorer")
+
+# Titel met klikbaar logo in HTML
+titel_html = """
+<div style="display: flex; align-items: center; margin-bottom: 20px;">
+    <a href="https://www.grotepodcastlas.nl/" target="_blank">
+        <img src="https://static.wixstatic.com/media/252b43_81804d09a5b3484f9b8c0a294d7b1a6c~mv2.png/v1/fill/w_120,h_120,al_c,q_85,usm_0.66_1.00_0.01,enc_auto/Podcastlas%20logo.png" 
+             alt="Logo De Grote Podcastlas" 
+             style="height: 60px; margin-right: 20px; border-radius: 50%;">
+    </a>
+    <h1 style="margin: 0;">De Grote Podcastlas Explorer</h1>
+</div>
+"""
+st.markdown(titel_html, unsafe_allow_html=True)
 
 df = load_data()
 
@@ -66,6 +79,7 @@ if not steden_df.empty:
 
 fig.update_layout(coloraxis_showscale=False, margin={"r":0,"t":0,"l":0,"b":0}, height=750)
 
+# Roteren of inzoomen op basis van sessie status
 if st.session_state.selected_name:
     sel_data = df[df["Weergave_Naam"] == st.session_state.selected_name]
     if not sel_data.empty:
@@ -77,7 +91,8 @@ if st.session_state.selected_name:
             if weergave == "3D (Wereldbol)":
                 fig.update_geos(projection_rotation=dict(lon=lon, lat=lat, roll=0))
             else:
-                fig.update_geos(center=dict(lon=lon, lat=lat), projection_scale=4)
+                # Inzoom-factor vergroot naar 5 voor 2D
+                fig.update_geos(center=dict(lon=lon, lat=lat), projection_scale=5)
 
 # --- 2. KAART TONEN & KLIK UITLEZEN ---
 map_selection = st.plotly_chart(fig, use_container_width=True, on_select="rerun", selection_mode="points")
