@@ -6,8 +6,7 @@ import plotly.express as px
 def load_data():
     df = pd.read_csv("data.csv")
     df.columns = df.columns.str.strip()
-    
-    # Hover-tekst configureren: begin met een hoofdletter en vervang "Afl." door "Aflevering"
+    # Hover-tekst configureren
     df["Hover_Info"] = df["Aflevering"].str.replace("Afl.", "Aflevering", case=False).str.capitalize()
     return df
 
@@ -16,56 +15,79 @@ st.title("📍 De Grote Podcastlas Explorer")
 
 df = load_data()
 
+# Sidebar of kolommen voor instellingen
 col1, col2 = st.columns(2)
 with col1:
     weergave = st.radio("Kies kaartweergave:", ["2D (Plat)", "3D (Wereldbol)"], horizontal=True)
 with col2:
-    if "Categorie" in df.columns:
-        categorie_opties = ["Alles"] + list(df["Categorie"].unique())
-        gekozen_categorie = st.selectbox("Kies categorie:", categorie_opties)
-    else:
-        gekozen_categorie = "Alles"
+    categorie_opties = ["Alles"] + list(df["Categorie"].unique())
+    gekozen_categorie = st.selectbox("Kies categorie:", categorie_opties)
 
+# Filter data op basis van categorie
+filtered_df = df.copy()
+if gekozen_categorie != "Alles":
+    filtered_df = filtered_df[filtered_df["Categorie"] == gekozen_categorie]
+
+# Tabel met selectie-mogelijkheid
+st.subheader("Selecteer een aflevering om te highlighten")
+df_display = filtered_df[["Weergave_Naam", "Categorie", "Aflevering"]].copy()
+df_display = df_display.rename(columns={"Weergave_Naam": "Naam"})
+df_display.index = range(1, len(df_display) + 1)
+
+# Gebruik st.dataframe met selection_mode
+event = st.dataframe(
+    df_display, 
+    use_container_width=True, 
+    on_select="rerun", 
+    selection_mode="single_row"
+)
+
+# Bepaal welk land/punt geselecteerd is
+selected_name = None
+if event and len(event.selection.rows) > 0:
+    selected_row_index = event.selection.rows[0]
+    selected_name = df_display.iloc[selected_row_index]["Naam"]
+
+# Voorbereiden kaartdata
 gekozen_projectie = "orthographic" if weergave == "3D (Wereldbol)" else "natural earth"
 
-if gekozen_categorie != "Alles" and "Categorie" in df.columns:
-    df = df[df["Categorie"] == gekozen_categorie]
+# Markeer het geselecteerde item in de data voor de kleur
+filtered_df["Highlight"] = filtered_df["Weergave_Naam"].apply(lambda x: 2 if x == selected_name else 1)
 
-if "Kaartweergave" in df.columns:
-    landen_df = df[df["Kaartweergave"] == "Land"]
-    steden_df = df[df["Kaartweergave"] == "Punt"].copy()
-else:
-    landen_df = df
-    steden_df = pd.DataFrame()
+landen_df = filtered_df[filtered_df["Kaartweergave"] == "Land"]
+steden_df = filtered_df[filtered_df["Kaartweergave"] == "Punt"].copy()
 
-# Kaart voor de landen (vlakken)
+# Teken de kaart
 fig = px.choropleth(
     landen_df,
     locations="Locatie",
     locationmode="country names",
-    color="Waarde",
+    color="Highlight",
     hover_name="Weergave_Naam",
     custom_data=["Hover_Info"],
     projection=gekozen_projectie, 
-    color_continuous_scale="greens"
+    color_continuous_scale=[[0, "green"], [0.5, "green"], [1, "yellow"]], # Groen is basis, Geel is highlight
 )
 
-# Hover instellingen voor landen
-fig.update_traces(
-    hovertemplate="<b>%{hovertext}</b><br>%{customdata[0]}<extra></extra>"
-)
+fig.update_traces(hovertemplate="<b>%{hovertext}</b><br>%{customdata[0]}<extra></extra>")
 
-# Toevoegen van de steden/punten
 if not steden_df.empty:
-    if 'Latitude' in steden_df.columns and 'Longitude' in steden_df.columns:
-        steden_df = steden_df.dropna(subset=['Latitude', 'Longitude'])
-        fig.add_scattergeo(
-            lon=steden_df["Longitude"],
-            lat=steden_df["Latitude"],
-            hoverinfo="text",
-            text="<b>" + steden_df["Weergave_Naam"] + "</b><br>" + steden_df["Hover_Info"],
-            marker=dict(size=8, color="red", line=dict(width=1, color="darkred"))
+    steden_df = steden_df.dropna(subset=['Latitude', 'Longitude'])
+    # Kleur punten: Rood is standaard, Geel als geselecteerd
+    steden_df["Point_Color"] = steden_df["Weergave_Naam"].apply(lambda x: "yellow" if x == selected_name else "red")
+    steden_df["Point_Size"] = steden_df["Weergave_Naam"].apply(lambda x: 15 if x == selected_name else 8)
+    
+    fig.add_scattergeo(
+        lon=steden_df["Longitude"],
+        lat=steden_df["Latitude"],
+        hoverinfo="text",
+        text="<b>" + steden_df["Weergave_Naam"] + "</b><br>" + steden_df["Hover_Info"],
+        marker=dict(
+            size=steden_df["Point_Size"], 
+            color=steden_df["Point_Color"], 
+            line=dict(width=1, color="black")
         )
+    )
 
 fig.update_layout(
     coloraxis_showscale=False,
@@ -78,10 +100,3 @@ fig.update_layout(
 )
 
 st.plotly_chart(fig, use_container_width=True)
-
-# Bewerken van de tabelweergave: hernoemen en index aanpassen naar 1
-df_display = df[["Weergave_Naam", "Categorie", "Aflevering"]].copy()
-df_display = df_display.rename(columns={"Weergave_Naam": "Naam"})
-df_display.index = range(1, len(df_display) + 1)
-
-st.dataframe(df_display, use_container_width=True)
