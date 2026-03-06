@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
+from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, JsCode
 import base64
 import os
 
@@ -17,6 +17,11 @@ def load_data():
         df.rename(columns={df.columns[0]: "Weergave_Naam"}, inplace=True)
     if "Aflevering" in df.columns:
         df["Hover_Info"] = df["Aflevering"].str.replace("Afl.", "Aflevering", case=False).str.capitalize()
+    
+    # Zorg dat de code niet crasht als de kolom 'Link' nog niet overal is ingevuld
+    if "Link" not in df.columns:
+        df["Link"] = ""
+        
     return df
 
 @st.cache_data
@@ -111,8 +116,6 @@ map_selection = st.plotly_chart(fig, use_container_width=True, on_select="rerun"
 
 if map_selection and "selection" in map_selection and map_selection["selection"].get("points"):
     point_data = map_selection["selection"]["points"][0]
-    
-    # Choropleth gebruikt 'hovertext', scattergeo gebruikt 'text'
     clicked_text = point_data.get("hovertext") or point_data.get("text")
     
     if clicked_text:
@@ -126,7 +129,7 @@ if map_selection and "selection" in map_selection and map_selection["selection"]
             st.rerun()
 
 # --- 3. TABEL OPBOUWEN & PRE-SELECTIE INSTELLEN ---
-df_display = filtered_df[["Weergave_Naam", "Categorie", "Aflevering"]].copy()
+df_display = filtered_df[["Weergave_Naam", "Categorie", "Aflevering", "Link"]].copy()
 df_display = df_display.rename(columns={"Weergave_Naam": "Naam"})
 
 # Verplaats het geselecteerde item naar de top van de DataFrame
@@ -138,6 +141,19 @@ if st.session_state.selected_name and st.session_state.selected_name in df_displ
 df_display.index = range(1, len(df_display) + 1)
 
 gb = GridOptionsBuilder.from_dataframe(df_display)
+
+# Verberg de Link-kolom zelf
+gb.configure_column("Link", hide=True)
+
+# Maak de Naam-kolom klikbaar met de URL uit de Link-kolom
+gb.configure_column("Naam", cellRenderer=JsCode('''
+    function(params) {
+        if (params.data && params.data.Link && params.data.Link.trim() !== "") {
+            return '<a href="' + params.data.Link + '" target="_blank" style="text-decoration: underline; font-weight: bold; color: #1f77b4;">' + params.value + '</a>';
+        }
+        return params.value;
+    }
+'''))
 
 if st.session_state.selected_name in df_display["Naam"].values:
     # De geselecteerde rij staat nu altijd op index 0
@@ -153,6 +169,7 @@ grid_response = AgGrid(
     gridOptions=gridOptions,
     update_mode=GridUpdateMode.SELECTION_CHANGED,
     fit_columns_on_grid_load=True,
+    allow_unsafe_jscode=True, # Nodig om de link werkend te maken
     theme='streamlit'
 )
 
