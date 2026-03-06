@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
+from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, JsCode
 import base64
 import os
 
@@ -111,8 +111,6 @@ map_selection = st.plotly_chart(fig, use_container_width=True, on_select="rerun"
 
 if map_selection and "selection" in map_selection and map_selection["selection"].get("points"):
     point_data = map_selection["selection"]["points"][0]
-    
-    # Choropleth gebruikt 'hovertext', scattergeo gebruikt 'text'
     clicked_text = point_data.get("hovertext") or point_data.get("text")
     
     if clicked_text:
@@ -125,11 +123,10 @@ if map_selection and "selection" in map_selection and map_selection["selection"]
             st.session_state.selected_name = clicked_name_clean
             st.rerun()
 
-# --- 3. TABEL OPBOUWEN & PRE-SELECTIE INSTELLEN ---
-df_display = filtered_df[["Weergave_Naam", "Categorie", "Aflevering"]].copy()
+# --- 3. TABEL OPBOUWEN ---
+df_display = filtered_df[["Weergave_Naam", "Categorie", "Aflevering", "Link"]].copy()
 df_display = df_display.rename(columns={"Weergave_Naam": "Naam"})
 
-# Verplaats het geselecteerde item naar de top van de DataFrame
 if st.session_state.selected_name and st.session_state.selected_name in df_display["Naam"].values:
     selected_row = df_display[df_display["Naam"] == st.session_state.selected_name]
     other_rows = df_display[df_display["Naam"] != st.session_state.selected_name]
@@ -139,8 +136,16 @@ df_display.index = range(1, len(df_display) + 1)
 
 gb = GridOptionsBuilder.from_dataframe(df_display)
 
+gb.configure_column("Link", headerName="🎧 Luister", cellRenderer=JsCode('''
+    function(params) {
+        if (params.value) {
+            return '<a href="' + params.value + '" target="_blank" style="text-decoration: none;">🎧 Luisteren</a>';
+        }
+        return "";
+    }
+'''))
+
 if st.session_state.selected_name in df_display["Naam"].values:
-    # De geselecteerde rij staat nu altijd op index 0
     gb.configure_selection(selection_mode="single", use_checkbox=False, pre_selected_rows=[0])
 else:
     gb.configure_selection(selection_mode="single", use_checkbox=False)
@@ -153,17 +158,21 @@ grid_response = AgGrid(
     gridOptions=gridOptions,
     update_mode=GridUpdateMode.SELECTION_CHANGED,
     fit_columns_on_grid_load=True,
+    allow_unsafe_jscode=True,
     theme='streamlit'
 )
 
-if grid_response.get('selected_rows'):
-    sel = grid_response['selected_rows']
+# De verbeterde check om de ValueError te voorkomen
+selected_rows = grid_response.get('selected_rows')
+if selected_rows is not None:
     clicked_table_name = None
     
-    if isinstance(sel, pd.DataFrame) and not sel.empty:
-        clicked_table_name = sel.iloc[0]["Naam"]
-    elif isinstance(sel, list) and len(sel) > 0:
-        clicked_table_name = sel[0]["Naam"]
+    # Check of het een DataFrame is (jouw geval) of een lijst
+    if isinstance(selected_rows, pd.DataFrame):
+        if not selected_rows.empty:
+            clicked_table_name = selected_rows.iloc[0]["Naam"]
+    elif isinstance(selected_rows, list) and len(selected_rows) > 0:
+        clicked_table_name = selected_rows[0]["Naam"]
 
     if clicked_table_name and st.session_state.selected_name != clicked_table_name:
         st.session_state.selected_name = clicked_table_name
