@@ -3,7 +3,7 @@ import pandas as pd
 import plotly.express as px
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 
-@st.cache_data
+# Cache is verwijderd zodat je áltijd de nieuwste data.csv inlaadt
 def load_data():
     df = pd.read_csv("data.csv")
     df.columns = df.columns.str.strip().str.replace('^[^a-zA-Z0-9]+', '', regex=True)
@@ -33,8 +33,9 @@ df_display = filtered_df[["Weergave_Naam", "Categorie", "Aflevering"]].copy()
 df_display = df_display.rename(columns={"Weergave_Naam": "Naam"})
 df_display.index = range(1, len(df_display) + 1)
 
-st.subheader("Klik op een rij in de tabel om de locatie op de kaart te highlighten")
+st.subheader("Klik op een rij in de tabel om de locatie te markeren")
 
+# Tabel configuratie
 gb = GridOptionsBuilder.from_dataframe(df_display)
 gb.configure_selection(selection_mode="single", use_checkbox=False)
 gridOptions = gb.build()
@@ -47,14 +48,16 @@ grid_response = AgGrid(
     theme='streamlit'
 )
 
+# Uitlezen van de selectie
 selected_name = None
-if grid_response['selected_rows'] is not None and len(grid_response['selected_rows']) > 0:
+if grid_response.get('selected_rows'):
     sel = grid_response['selected_rows']
-    if isinstance(sel, pd.DataFrame):
+    if isinstance(sel, pd.DataFrame) and not sel.empty:
         selected_name = sel.iloc[0]["Naam"]
-    else:
+    elif isinstance(sel, list) and len(sel) > 0:
         selected_name = sel[0]["Naam"]
 
+# Basis kaart setup
 gekozen_projectie = "orthographic" if weergave == "3D (Wereldbol)" else "natural earth"
 filtered_df["Highlight"] = filtered_df["Weergave_Naam"].apply(lambda x: 2 if x == selected_name else 1)
 
@@ -86,26 +89,23 @@ if not steden_df.empty:
         marker=dict(size=steden_df["Point_Size"], color=steden_df["Point_Color"], line=dict(width=1, color="black"))
     )
 
-fig.update_geos(
-    showcoastlines=True, coastlinecolor="Black",
-    showland=True, landcolor="lightgrey",
-    showocean=True, oceancolor="azure"
-)
+fig.update_layout(coloraxis_showscale=False, margin={"r":0,"t":0,"l":0,"b":0})
 
+# Logica om de kaart te roteren en in te zoomen
 if selected_name:
     sel_data = df[df["Weergave_Naam"] == selected_name]
     if not sel_data.empty:
         lat = sel_data.iloc[0]["Latitude"]
         lon = sel_data.iloc[0]["Longitude"]
+        
+        # Controle of er geldige coördinaten zijn
         if pd.notna(lat) and pd.notna(lon):
-            lat = float(lat)
-            lon = float(lon)
-            
+            lat, lon = float(lat), float(lon)
             if weergave == "3D (Wereldbol)":
                 fig.update_geos(projection_rotation=dict(lon=lon, lat=lat, roll=0))
             else:
-                fig.update_geos(center=dict(lat=lat, lon=lon), projection_scale=3.5)
-
-fig.update_layout(coloraxis_showscale=False, margin={"r":0,"t":0,"l":0,"b":0})
+                fig.update_geos(center=dict(lon=lon, lat=lat), projection_scale=4)
+        else:
+            st.warning(f"Geen coördinaten in data.csv gevonden voor {selected_name}.")
 
 st.plotly_chart(fig, use_container_width=True)
