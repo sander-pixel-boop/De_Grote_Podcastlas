@@ -1,15 +1,15 @@
 Weergave_Naam,Locatie,Type,Aflevering,Waarde
 El Salvador,El Salvador,Land,Afl. 149,1
-Baskenland,Basque Country,Stad,Rafelrandjes 8,1
-Koerdistan,Kurdistan,Stad,Rafelrandjes 7,1
-Molukken,Maluku,Stad,Rafelrandjes 6,1
-Lapland,Lapland,Stad,Rafelrandjes 5,1
+Baskenland,Basque Country,Stad,Rafelrandjes #8,1
+Koerdistan,Kurdistan,Stad,Rafelrandjes #7,1
+Molukken,Maluku,Stad,Rafelrandjes #6,1
+Lapland,Lapland,Stad,Rafelrandjes #5,1
 Pakistan,Pakistan,Land,Afl. 148,1
 Guinee-Bissau,Guinea-Bissau,Land,Afl. 147,1
 Zuid-Chinese Zee,South China Sea,Stad,Special #17,1
 Moldavië,Moldova,Land,Afl. 146,1
-Los Angeles,Los Angeles,Stad,Wereldstad 14,1
-Rome,Rome,Stad,Wereldstad 13,1
+Los Angeles,Los Angeles,Stad,Wereldstad #14,1
+Rome,Rome,Stad,Wereldstad #13,1
 Malawi,Malawi,Land,Afl. 145,1
 Nieuw-Zeeland,New Zealand,Land,Afl. 144,1
 Syrië,Syria,Land,Afl. 143,1
@@ -19,32 +19,32 @@ Suriname,Suriname,Land,Afl. 141,1
 Republiek Congo,Republic of the Congo,Land,Afl. 140,1
 Kiribati,Kiribati,Land,Afl. 139,1
 Polen,Poland,Land,Afl. 138,1
-Zuid-Amerika,South America,Stad,Werelddeel 3,1
+Zuid-Amerika,South America,Stad,Werelddeel #3,1
 India,India,Land,Afl. 137,1
-Rio de Janeiro,Rio de Janeiro,Stad,Wereldstad 12,1
-Berlijn,Berlin,Stad,Wereldstad 11,1
-Curaçao,Curaçao,Stad,Eilanden 6,1
-Sint Eustatius,Sint Eustatius,Stad,Eilanden 5,1
-Bonaire,Bonaire,Stad,Eilanden 4,1
-Nederland,Netherlands,Land,Kids 10,1
-Verenigd Koninkrijk,United Kingdom,Land,Kids 9,1
-Sint Maarten,Sint Maarten,Stad,Eilanden 3,1
-Spanje,Spain,Land,Kids 8,1
-Oostenrijk,Austria,Land,Kids 7,1
-Saba,Saba,Stad,Eilanden 2,1
-Denemarken,Denmark,Land,Kids 6,1
-Griekenland,Greece,Land,Kids 5,1
-Aruba,Aruba,Stad,Eilanden 1,1
-Duitsland,Germany,Land,Kids 4,1
-België,Belgium,Land,Kids 3,1
-Frankrijk,France,Land,Kids 2,1
-Italië,Italy,Land,Kids 1,1
+Rio de Janeiro,Rio de Janeiro,Stad,Wereldstad #12,1
+Berlijn,Berlin,Stad,Wereldstad #11,1
+Curaçao,Curaçao,Stad,Eilanden #6,1
+Sint Eustatius,Sint Eustatius,Stad,Eilanden #5,1
+Bonaire,Bonaire,Stad,Eilanden #4,1
+Nederland,Netherlands,Land,Kids #10,1
+Verenigd Koninkrijk,United Kingdom,Land,Kids #9,1
+Sint Maarten,Sint Maarten,Stad,Eilanden #3,1
+Spanje,Spain,Land,Kids #8,1
+Oostenrijk,Austria,Land,Kids #7,1
+Saba,Saba,Stad,Eilanden #2,1
+Denemarken,Denmark,Land,Kids #6,1
+Griekenland,Greece,Land,Kids #5,1
+Aruba,Aruba,Stad,Eilanden #1,1
+Duitsland,Germany,Land,Kids #4,1
+België,Belgium,Land,Kids #3,1
+Frankrijk,France,Land,Kids #2,1
+Italië,Italy,Land,Kids #1,1
 Thailand,Thailand,Land,Afl. 136,1
 Amsterdam,Amsterdam,Stad,Special #14,1
 Togo,Togo,Land,Afl. 135,1
 Bahrein,Bahrain,Land,Afl. 134,1
 Noord-Macedonië,North Macedonia,Land,Afl. 133,1
-Afrika,Africa,Stad,Werelddeel 2,1
+Afrika,Africa,Stad,Werelddeel #2,1
 Noord-Korea,North Korea,Land,Afl. 132,1
 eSwatini,Eswatini,Land,Afl. 131,1
 Venezuela,Venezuela,Land,Afl. 130,1
@@ -56,16 +56,16 @@ Kenia,Kenya,Land,Afl. 125,1
 Libanon,Lebanon,Land,Afl. 124,1
 Kaapverdië,Cape Verde,Land,Afl. 123,1
 Rusland,Russia,Land,Afl. 122,1
-Puerto Rico,Puerto Rico,Stad,Rafelrandjes 4,1
-Tibet,Tibet,Stad,Rafelrandjes 3,1
-Westelijke Sahara,Western Sahara,Stad,Rafelrandjes 2,1
-Groenland,Greenland,Stad,Rafelrandjes 1,1
+Puerto Rico,Puerto Rico,Stad,Rafelrandjes #4,1
+Tibet,Tibet,Stad,Rafelrandjes #3,1
+Westelijke Sahara,Western Sahara,Stad,Rafelrandjes #2,1
+Groenland,Greenland,Stad,Rafelrandjes #1,1
 Iran,Iran,Land,Afl. 121,1
 Nicaragua,Nicaragua,Land,Afl. 120,1
 Niger,Niger,Land,Afl. 119,1
 Belarus,Belarus,Land,Afl. 118,1
-Seoul,Seoul,Stad,Wereldstad 10,1
-Istanbul,Istanbul,Stad,Wereldstad 9,1
+Seoul,Seoul,Stad,Wereldstad #10,1
+Istanbul,Istanbul,Stad,Wereldstad #9,1
 Dominica,Dominica,Land,Afl. 117,1
 Indonesië,Indonesia,Land,Afl. 116,1
 Ghana,Ghana,Land,Afl. 115,1
@@ -76,8 +76,8 @@ Oostenrijk,Austria,Land,Afl. 111,1
 Soedan,Sudan,Land,Afl. 110,1
 België,Belgium,Land,Afl. 109,1
 Mexico,Mexico,Land,Afl. 108,1
-Beijing,Beijing,Stad,Wereldstad 8,1
-Londen,London,Stad,Wereldstad 7,1
+Beijing,Beijing,Stad,Wereldstad #8,1
+Londen,London,Stad,Wereldstad #7,1
 Kirgizië,Kyrgyzstan,Land,Afl. 107,1
 Zambia,Zambia,Land,Afl. 106,1
 Filipijnen,Philippines,Land,Afl. 105,1
@@ -87,7 +87,7 @@ Argentinië,Argentina,Land,Afl. 102,1
 Servië,Serbia,Land,Afl. 101,1
 Bhutan,Bhutan,Land,Afl. 100,1
 Jamaica,Jamaica,Land,Afl. 99,1
-Europa,Europe,Stad,Werelddeel 1,1
+Europa,Europe,Stad,Werelddeel #1,1
 Ethiopië,Ethiopia,Land,Afl. 98,1
 Mauritius,Mauritius,Land,Afl. 97,1
 Cambodja,Cambodia,Land,Afl. 96,1
@@ -108,8 +108,8 @@ Uruguay,Uruguay,Land,Afl. 83,1
 Ivoorkust,Ivory Coast,Land,Afl. 82,1
 Liechtenstein,Liechtenstein,Land,Afl. 81,1
 Papoea-Nieuw-Guinea,Papua New Guinea,Land,Afl. 80,1
-Mumbai,Mumbai,Stad,Wereldstad 6,1
-Caïro,Cairo,Stad,Wereldstad 5,1
+Mumbai,Mumbai,Stad,Wereldstad #6,1
+Caïro,Cairo,Stad,Wereldstad #5,1
 Mozambique,Mozambique,Land,Afl. 79,1
 Slowakije,Slovakia,Land,Afl. 78,1
 Belize,Belize,Land,Afl. 77,1
@@ -122,8 +122,8 @@ Engeland,England,Stad,Afl. 71,1
 Japan,Japan,Land,Afl. 70,1
 Marshalleilanden,Marshall Islands,Land,Afl. 69,1
 Guinee,Guinea,Land,Afl. 68,1
-Parijs,Paris,Stad,Wereldstad 4,1
-Hongkong,Hong Kong,Stad,Wereldstad 3,1
+Parijs,Paris,Stad,Wereldstad #4,1
+Hongkong,Hong Kong,Stad,Wereldstad #3,1
 Saint Lucia,Saint Lucia,Land,Afl. 67,1
 Roemenië,Romania,Land,Afl. 66,1
 Namibië,Namibia,Land,Afl. 65,1
@@ -143,23 +143,23 @@ Panama,Panama,Land,Afl. 54,1
 Mali,Mali,Land,Afl. 53,1
 Turkije,Turkey,Land,Special #5,1
 Turkije,Turkey,Land,Afl. 52,1
-Utrecht,Utrecht,Stad,Provincie 12,1
-Flevoland,Flevoland,Stad,Provincie 11,1
-Zuid-Holland,South Holland,Stad,Provincie 10,1
-Gelderland,Gelderland,Stad,Provincie 9,1
-Groningen,Groningen,Stad,Provincie 8,1
-Noord-Brabant,North Brabant,Stad,Provincie 7,1
-Friesland,Friesland,Stad,Provincie 6,1
-Zeeland,Zeeland,Stad,Provincie 5,1
-Overijssel,Overijssel,Stad,Provincie 4,1
-Limburg,Limburg,Stad,Provincie 3,1
-Noord-Holland,North Holland,Stad,Provincie 2,1
-Drenthe,Drenthe,Stad,Provincie 1,1
+Utrecht,Utrecht,Stad,Provincie #12,1
+Flevoland,Flevoland,Stad,Provincie #11,1
+Zuid-Holland,South Holland,Stad,Provincie #10,1
+Gelderland,Gelderland,Stad,Provincie #9,1
+Groningen,Groningen,Stad,Provincie #8,1
+Noord-Brabant,North Brabant,Stad,Provincie #7,1
+Friesland,Friesland,Stad,Provincie #6,1
+Zeeland,Zeeland,Stad,Provincie #5,1
+Overijssel,Overijssel,Stad,Provincie #4,1
+Limburg,Limburg,Stad,Provincie #3,1
+Noord-Holland,North Holland,Stad,Provincie #2,1
+Drenthe,Drenthe,Stad,Provincie #1,1
 Armenië,Armenia,Land,Afl. 51,1
 Zuid-Afrika,South Africa,Land,Afl. 50,1
 Cyprus,Cyprus,Land,Afl. 49,1
-Moskou,Moscow,Stad,Wereldstad 2,1
-New York City,New York City,Stad,Wereldstad 1,1
+Moskou,Moscow,Stad,Wereldstad #2,1
+New York City,New York City,Stad,Wereldstad #1,1
 Maleisië,Malaysia,Land,Afl. 48,1
 Djibouti,Djibouti,Land,Afl. 47,1
 Peru,Peru,Land,Afl. 46,1
