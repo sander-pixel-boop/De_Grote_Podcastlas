@@ -25,11 +25,9 @@ df = load_data()
 landen_df = df[df["Type"] == "Land"]
 steden_df = df[df["Type"] == "Stad"].copy()
 
-# Coördinaten ophalen voor steden
 steden_df["Coordinates"] = steden_df["Locatie"].apply(get_coordinates)
 steden_df[["Latitude", "Longitude"]] = pd.DataFrame(steden_df["Coordinates"].tolist(), index=steden_df.index)
 
-# 1. Landen toevoegen via Plotly Choropleth
 fig = px.choropleth(
     landen_df,
     locations="Locatie",
@@ -37,11 +35,10 @@ fig = px.choropleth(
     color="Waarde",
     hover_name="Weergave_Naam",
     hover_data={"Waarde": False, "Locatie": False, "Aflevering": True},
-    projection="natural earth", # Gebruik "orthographic" voor een 3D wereldbol
+    projection="orthographic", 
     color_continuous_scale="greens"
 )
 
-# 2. Steden toevoegen als punten
 fig.add_scattergeo(
     lon=steden_df["Longitude"],
     lat=steden_df["Latitude"],
@@ -50,7 +47,6 @@ fig.add_scattergeo(
     marker=dict(size=8, color="red", line=dict(width=1, color="darkred"))
 )
 
-# 3. Kaart opmaak optimaliseren
 fig.update_layout(
     coloraxis_showscale=False,
     margin={"r":0,"t":0,"l":0,"b":0},
