@@ -7,9 +7,8 @@ def load_data():
     df = pd.read_csv("data.csv")
     df.columns = df.columns.str.strip()
     
-    # Maak een nieuwe kolom voor de hover-weergave
-    # Dit zet "Wereldstad #14" om naar "wereldstad #14"
-    df["Hover_Info"] = df["Aflevering"].str.lower()
+    # Zorg dat de weergave met een hoofdletter begint (bijv. "Wereldstad #14")
+    df["Hover_Info"] = df["Aflevering"].str.capitalize()
     return df
 
 st.set_page_config(page_title="De Grote Podcastlas", layout="wide")
@@ -51,7 +50,7 @@ fig = px.choropleth(
     color_continuous_scale="greens"
 )
 
-# Hover instellingen voor landen: Alleen Naam en de aangepaste afleveringtekst
+# Hover instellingen voor landen
 fig.update_traces(
     hovertemplate="<b>%{hovertext}</b><br>%{customdata[0]}<extra></extra>"
 )
@@ -67,8 +66,6 @@ if not steden_df.empty:
             text="<b>" + steden_df["Weergave_Naam"] + "</b><br>" + steden_df["Hover_Info"],
             marker=dict(size=8, color="red", line=dict(width=1, color="darkred"))
         )
-    else:
-        st.error("Let op: De kolommen 'Latitude' en 'Longitude' ontbreken in de data.")
 
 fig.update_layout(
     coloraxis_showscale=False,
