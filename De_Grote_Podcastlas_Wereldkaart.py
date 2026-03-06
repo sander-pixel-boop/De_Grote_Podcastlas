@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 
 @st.cache_data
 def load_data():
@@ -34,17 +35,27 @@ df_display.index = range(1, len(df_display) + 1)
 
 st.subheader("Klik op een rij in de tabel om de locatie op de kaart te highlighten")
 
-selected_event = st.dataframe(
-    df_display, 
-    use_container_width=True, 
-    on_select="rerun",
-    selection_mode="single-row" # Gecorrigeerd: streepje in plaats van laag streepje
+# Configureren van de AgGrid tabel (zonder checkbox)
+gb = GridOptionsBuilder.from_dataframe(df_display)
+gb.configure_selection(selection_mode="single", use_checkbox=False)
+gridOptions = gb.build()
+
+grid_response = AgGrid(
+    df_display,
+    gridOptions=gridOptions,
+    update_mode=GridUpdateMode.SELECTION_CHANGED,
+    fit_columns_on_grid_load=True,
+    theme='streamlit'
 )
 
+# Bepaal geselecteerde naam
 selected_name = None
-if selected_event and "rows" in selected_event.selection and len(selected_event.selection["rows"]) > 0:
-    row_idx = selected_event.selection["rows"][0]
-    selected_name = df_display.iloc[row_idx]["Naam"]
+if grid_response['selected_rows'] is not None and len(grid_response['selected_rows']) > 0:
+    sel = grid_response['selected_rows']
+    if isinstance(sel, pd.DataFrame):
+        selected_name = sel.iloc[0]["Naam"]
+    else:
+        selected_name = sel[0]["Naam"]
 
 gekozen_projectie = "orthographic" if weergave == "3D (Wereldbol)" else "natural earth"
 filtered_df["Highlight"] = filtered_df["Weergave_Naam"].apply(lambda x: 2 if x == selected_name else 1)
