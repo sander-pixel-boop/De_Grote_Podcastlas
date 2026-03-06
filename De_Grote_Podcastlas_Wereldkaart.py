@@ -7,8 +7,8 @@ def load_data():
     df = pd.read_csv("data.csv")
     df.columns = df.columns.str.strip()
     
-    # Zorg dat de weergave met een hoofdletter begint (bijv. "Wereldstad #14")
-    df["Hover_Info"] = df["Aflevering"].str.capitalize()
+    # Hover-tekst configureren: begin met een hoofdletter en vervang "Afl." door "Aflevering"
+    df["Hover_Info"] = df["Aflevering"].str.replace("Afl.", "Aflevering", case=False).str.capitalize()
     return df
 
 st.set_page_config(page_title="De Grote Podcastlas", layout="wide")
@@ -50,7 +50,7 @@ fig = px.choropleth(
     color_continuous_scale="greens"
 )
 
-# Hover instellingen voor landen
+# Hover instellingen voor landen: Alleen Naam en de verbeterde afleveringtekst
 fig.update_traces(
     hovertemplate="<b>%{hovertext}</b><br>%{customdata[0]}<extra></extra>"
 )
@@ -78,4 +78,6 @@ fig.update_layout(
 )
 
 st.plotly_chart(fig, use_container_width=True)
+
+# Tabel weergeven in de nieuwe volgorde (Colombia eerst)
 st.dataframe(df[["Weergave_Naam", "Categorie", "Aflevering"]])
