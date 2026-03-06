@@ -30,7 +30,13 @@ steden_df = df[df["Type"] == "Stad"].copy()
 steden_df["Coordinates"] = steden_df["Locatie"].apply(get_coordinates)
 steden_df[["Latitude", "Longitude"]] = pd.DataFrame(steden_df["Coordinates"].tolist(), index=steden_df.index)
 
-m = folium.Map(location=[20, 0], zoom_start=2, tiles="CartoDB positron")
+# Aangepast: Gebruik Esri satellietbeelden voor een realistische weergave
+m = folium.Map(
+    location=[20, 0], 
+    zoom_start=2, 
+    tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    attr="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
+)
 
 geojson_url = "https://raw.githubusercontent.com/python-visualization/folium/master/examples/data/world-countries.json"
 folium.Choropleth(
@@ -39,8 +45,8 @@ folium.Choropleth(
     columns=["Locatie", "Waarde"],
     key_on="feature.properties.name",
     fill_color="YlGn",
-    fill_opacity=0.7,
-    line_opacity=0.2,
+    fill_opacity=0.5, # Iets transparanter gemaakt zodat de satellietkaart er beter doorheen schijnt
+    line_opacity=0.5,
     legend_name="Besproken"
 ).add_to(m)
 
