@@ -24,6 +24,9 @@ with col2:
     categorie_opties = ["Alles"] + list(df["Categorie"].unique())
     gekozen_categorie = st.selectbox("Kies categorie:", categorie_opties)
 
+# Reserveer een container bovenaan de pagina voor de kaart
+kaart_container = st.container()
+
 filtered_df = df.copy()
 if gekozen_categorie != "Alles":
     filtered_df = filtered_df[filtered_df["Categorie"] == gekozen_categorie]
@@ -32,8 +35,7 @@ df_display = filtered_df[["Weergave_Naam", "Categorie", "Aflevering"]].copy()
 df_display = df_display.rename(columns={"Weergave_Naam": "Naam"})
 df_display.index = range(1, len(df_display) + 1)
 
-st.subheader("Klik op een rij in de tabel om de locatie te markeren")
-
+# Tabel configuratie (zonder subheader tekst)
 gb = GridOptionsBuilder.from_dataframe(df_display)
 gb.configure_selection(selection_mode="single", use_checkbox=False)
 gridOptions = gb.build()
@@ -46,7 +48,7 @@ grid_response = AgGrid(
     theme='streamlit'
 )
 
-# Veilige check om de ValueError te voorkomen
+# Veilige check om de selectie uit de tabel te halen
 selected_name = None
 sel_rows = grid_response.get('selected_rows')
 
@@ -88,7 +90,12 @@ if not steden_df.empty:
         marker=dict(size=steden_df["Point_Size"], color=steden_df["Point_Color"], line=dict(width=1, color="black"))
     )
 
-fig.update_layout(coloraxis_showscale=False, margin={"r":0,"t":0,"l":0,"b":0})
+# Kaart layout aanpassen (height zorgt ervoor dat hij groter is)
+fig.update_layout(
+    coloraxis_showscale=False, 
+    margin={"r":0,"t":0,"l":0,"b":0},
+    height=750 
+)
 
 if selected_name:
     sel_data = df[df["Weergave_Naam"] == selected_name]
@@ -105,4 +112,6 @@ if selected_name:
         else:
             st.warning(f"Geen coördinaten in data.csv gevonden voor {selected_name}.")
 
-st.plotly_chart(fig, use_container_width=True)
+# Teken de kaart in de gereserveerde ruimte bovenaan
+with kaart_container:
+    st.plotly_chart(fig, use_container_width=True)
