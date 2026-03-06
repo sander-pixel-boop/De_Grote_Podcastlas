@@ -35,7 +35,6 @@ df_display.index = range(1, len(df_display) + 1)
 
 st.subheader("Klik op een rij in de tabel om de locatie op de kaart te highlighten")
 
-# Configureren van de AgGrid tabel (zonder checkbox)
 gb = GridOptionsBuilder.from_dataframe(df_display)
 gb.configure_selection(selection_mode="single", use_checkbox=False)
 gridOptions = gb.build()
@@ -48,7 +47,6 @@ grid_response = AgGrid(
     theme='streamlit'
 )
 
-# Bepaal geselecteerde naam
 selected_name = None
 if grid_response['selected_rows'] is not None and len(grid_response['selected_rows']) > 0:
     sel = grid_response['selected_rows']
@@ -89,4 +87,15 @@ if not steden_df.empty:
     )
 
 fig.update_layout(coloraxis_showscale=False, margin={"r":0,"t":0,"l":0,"b":0})
+
+# Automatisch roteren van de 3D Wereldbol naar de selectie
+if selected_name and weergave == "3D (Wereldbol)":
+    sel_data = df[df["Weergave_Naam"] == selected_name]
+    if not sel_data.empty:
+        lat = sel_data.iloc[0]["Latitude"]
+        lon = sel_data.iloc[0]["Longitude"]
+        # Draait alleen als er coördinaten in data.csv staan
+        if pd.notna(lat) and pd.notna(lon):
+            fig.update_geos(projection_rotation=dict(lon=lon, lat=lat, roll=0))
+
 st.plotly_chart(fig, use_container_width=True)
