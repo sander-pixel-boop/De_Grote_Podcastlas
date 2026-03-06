@@ -131,6 +131,7 @@ df_display.index = range(1, len(df_display) + 1)
 
 gb = GridOptionsBuilder.from_dataframe(df_display)
 
+# De cruciale render-functie voor de link
 gb.configure_column("Link", headerName="Website", cellRenderer=JsCode('''
     function(params) {
         if (params.value && params.value.trim() !== "") {
@@ -152,7 +153,7 @@ grid_response = AgGrid(
     gridOptions=gridOptions,
     update_mode=GridUpdateMode.SELECTION_CHANGED,
     fit_columns_on_grid_load=True,
-    allow_unsafe_jscode=True,
+    allow_unsafe_jscode=True,  # Dit activeert de JsCode voor de link
     theme='streamlit'
 )
 
