@@ -1,24 +1,10 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from geopy.geocoders import Nominatim
-import time
 
 @st.cache_data
 def load_data():
     return pd.read_csv("data.csv")
-
-@st.cache_data
-def get_coordinates(city_name):
-    geolocator = Nominatim(user_agent="podcastlas_app")
-    try:
-        time.sleep(0.5) 
-        location = geolocator.geocode(city_name)
-        if location:
-            return location.latitude, location.longitude
-    except:
-        return None, None
-    return None, None
 
 st.set_page_config(page_title="De Grote Podcastlas", layout="wide")
 st.title("📍 De Grote Podcastlas Explorer")
@@ -29,26 +15,16 @@ col1, col2 = st.columns(2)
 with col1:
     weergave = st.radio("Kies kaartweergave:", ["2D (Plat)", "3D (Wereldbol)"], horizontal=True)
 with col2:
-    # Haal categorieën dynamisch uit de CSV
     categorie_opties = ["Alles"] + list(df["Categorie"].unique())
     gekozen_categorie = st.selectbox("Kies categorie:", categorie_opties)
 
 gekozen_projectie = "orthographic" if weergave == "3D (Wereldbol)" else "natural earth"
 
-# Filter op categorie
 if gekozen_categorie != "Alles":
     df = df[df["Categorie"] == gekozen_categorie]
 
-# Splits op kaartweergave (Land vs Punt) in plaats van categorie
 landen_df = df[df["Kaartweergave"] == "Land"]
 steden_df = df[df["Kaartweergave"] == "Punt"].copy()
-
-if not steden_df.empty:
-    steden_df["Coordinates"] = steden_df["Locatie"].apply(get_coordinates)
-    steden_df[["Latitude", "Longitude"]] = pd.DataFrame(steden_df["Coordinates"].tolist(), index=steden_df.index)
-else:
-    steden_df["Latitude"] = []
-    steden_df["Longitude"] = []
 
 fig = px.choropleth(
     landen_df,
@@ -62,6 +38,8 @@ fig = px.choropleth(
 )
 
 if not steden_df.empty:
+    # Verwijder lege waarden als zekerheid
+    steden_df = steden_df.dropna(subset=['Latitude', 'Longitude'])
     fig.add_scattergeo(
         lon=steden_df["Longitude"],
         lat=steden_df["Latitude"],
