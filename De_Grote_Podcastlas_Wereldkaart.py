@@ -38,7 +38,7 @@ selected_event = st.dataframe(
     df_display, 
     use_container_width=True, 
     on_select="rerun",
-    selection_mode="single_row"
+    selection_mode="single-row" # Gecorrigeerd: streepje in plaats van laag streepje
 )
 
 selected_name = None
