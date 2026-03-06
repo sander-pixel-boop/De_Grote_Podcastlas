@@ -136,20 +136,26 @@ df_display.index = range(1, len(df_display) + 1)
 
 gb = GridOptionsBuilder.from_dataframe(df_display)
 
-gb.configure_column("Link", headerName="🎧 Luister", cellRenderer=JsCode('''
-    function(params) {
-        if (params.value) {
-            return '<a href="' + params.value + '" target="_blank" style="text-decoration: none;">🎧 Luisteren</a>';
+# VERBETERDE RENDERER: Forceert HTML-rendering in de kolom
+gb.configure_column(
+    "Link", 
+    headerName="🎧 Luister", 
+    cellRenderer=JsCode('''
+        function(params) {
+            if (params.value && params.value.includes('http')) {
+                return '<a href="' + params.value + '" target="_blank" style="text-decoration: none; font-weight: bold; color: #1f77b4;">🎧 Luisteren</a>';
+            }
+            return "";
         }
-        return "";
-    }
-'''))
+    ''')
+)
 
 if st.session_state.selected_name in df_display["Naam"].values:
     gb.configure_selection(selection_mode="single", use_checkbox=False, pre_selected_rows=[0])
 else:
     gb.configure_selection(selection_mode="single", use_checkbox=False)
 
+# Cruciaal: vertel de grid expliciet dat HTML is toegestaan in cellen
 gridOptions = gb.build()
 
 # --- 4. TABEL TONEN & KLIK UITLEZEN ---
@@ -158,16 +164,13 @@ grid_response = AgGrid(
     gridOptions=gridOptions,
     update_mode=GridUpdateMode.SELECTION_CHANGED,
     fit_columns_on_grid_load=True,
-    allow_unsafe_jscode=True,
+    allow_unsafe_jscode=True,  
     theme='streamlit'
 )
 
-# De verbeterde check om de ValueError te voorkomen
 selected_rows = grid_response.get('selected_rows')
 if selected_rows is not None:
     clicked_table_name = None
-    
-    # Check of het een DataFrame is (jouw geval) of een lijst
     if isinstance(selected_rows, pd.DataFrame):
         if not selected_rows.empty:
             clicked_table_name = selected_rows.iloc[0]["Naam"]
