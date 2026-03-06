@@ -50,7 +50,7 @@ fig = px.choropleth(
     color_continuous_scale="greens"
 )
 
-# Hover instellingen voor landen: Alleen Naam en de verbeterde afleveringtekst
+# Hover instellingen voor landen
 fig.update_traces(
     hovertemplate="<b>%{hovertext}</b><br>%{customdata[0]}<extra></extra>"
 )
@@ -79,5 +79,9 @@ fig.update_layout(
 
 st.plotly_chart(fig, use_container_width=True)
 
-# Tabel weergeven in de nieuwe volgorde (Colombia eerst)
-st.dataframe(df[["Weergave_Naam", "Categorie", "Aflevering"]])
+# Bewerken van de tabelweergave: hernoemen en index aanpassen naar 1
+df_display = df[["Weergave_Naam", "Categorie", "Aflevering"]].copy()
+df_display = df_display.rename(columns={"Weergave_Naam": "Naam"})
+df_display.index = range(1, len(df_display) + 1)
+
+st.dataframe(df_display, use_container_width=True)
