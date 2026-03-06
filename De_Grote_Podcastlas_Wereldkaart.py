@@ -5,7 +5,6 @@ from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, JsCode
 import base64
 import os
 
-# Initialiseer het geheugen voor de selectie
 if 'selected_name' not in st.session_state:
     st.session_state.selected_name = None
 
@@ -17,11 +16,8 @@ def load_data():
         df.rename(columns={df.columns[0]: "Weergave_Naam"}, inplace=True)
     if "Aflevering" in df.columns:
         df["Hover_Info"] = df["Aflevering"].str.replace("Afl.", "Aflevering", case=False).str.capitalize()
-    
-    # Zorg dat de code niet crasht als de kolom 'Link' nog niet overal is ingevuld
     if "Link" not in df.columns:
         df["Link"] = ""
-        
     return df
 
 @st.cache_data
@@ -33,11 +29,9 @@ def get_base64_image(image_path):
 
 st.set_page_config(page_title="De Grote Podcastlas", layout="wide")
 
-# Lokaal logo inladen
 logo_base64 = get_base64_image("logodegrotepodcastlas.png")
 img_src = f"data:image/png;base64,{logo_base64}" if logo_base64 else ""
 
-# Titel met klikbaar lokaal logo in HTML
 titel_html = f"""
 <div style="display: flex; align-items: center; margin-bottom: 20px;">
     <a href="https://www.grotepodcastlas.nl/" target="_blank">
@@ -63,7 +57,6 @@ filtered_df = df.copy()
 if gekozen_categorie != "Alles":
     filtered_df = filtered_df[filtered_df["Categorie"] == gekozen_categorie]
 
-# --- 1. KAART OPBOUWEN ---
 gekozen_projectie = "orthographic" if weergave == "3D (Wereldbol)" else "natural earth"
 filtered_df["Highlight"] = filtered_df["Weergave_Naam"].apply(lambda x: 2 if x == st.session_state.selected_name else 1)
 
@@ -97,7 +90,6 @@ if not steden_df.empty:
 
 fig.update_layout(coloraxis_showscale=False, margin={"r":0,"t":0,"l":0,"b":0}, height=750)
 
-# Roteren of inzoomen op basis van sessie status
 if st.session_state.selected_name:
     sel_data = df[df["Weergave_Naam"] == st.session_state.selected_name]
     if not sel_data.empty:
@@ -111,7 +103,6 @@ if st.session_state.selected_name:
             else:
                 fig.update_geos(center=dict(lon=lon, lat=lat), projection_scale=5)
 
-# --- 2. KAART TONEN & KLIK UITLEZEN ---
 map_selection = st.plotly_chart(fig, use_container_width=True, on_select="rerun", selection_mode="points")
 
 if map_selection and "selection" in map_selection and map_selection["selection"].get("points"):
@@ -128,11 +119,9 @@ if map_selection and "selection" in map_selection and map_selection["selection"]
             st.session_state.selected_name = clicked_name_clean
             st.rerun()
 
-# --- 3. TABEL OPBOUWEN & PRE-SELECTIE INSTELLEN ---
 df_display = filtered_df[["Weergave_Naam", "Categorie", "Aflevering", "Link"]].copy()
 df_display = df_display.rename(columns={"Weergave_Naam": "Naam"})
 
-# Verplaats het geselecteerde item naar de top van de DataFrame
 if st.session_state.selected_name and st.session_state.selected_name in df_display["Naam"].values:
     selected_row = df_display[df_display["Naam"] == st.session_state.selected_name]
     other_rows = df_display[df_display["Naam"] != st.session_state.selected_name]
@@ -142,34 +131,28 @@ df_display.index = range(1, len(df_display) + 1)
 
 gb = GridOptionsBuilder.from_dataframe(df_display)
 
-# Verberg de Link-kolom zelf
-gb.configure_column("Link", hide=True)
-
-# Maak de Naam-kolom klikbaar met de URL uit de Link-kolom
-gb.configure_column("Naam", cellRenderer=JsCode('''
+gb.configure_column("Link", headerName="Website", cellRenderer=JsCode('''
     function(params) {
-        if (params.data && params.data.Link && params.data.Link.trim() !== "") {
-            return '<a href="' + params.data.Link + '" target="_blank" style="text-decoration: underline; font-weight: bold; color: #1f77b4;">' + params.value + '</a>';
+        if (params.value && params.value.trim() !== "") {
+            return '<a href="' + params.value + '" target="_blank" style="text-decoration: none; font-weight: bold; color: #1f77b4;">🎧 Luisteren</a>';
         }
-        return params.value;
+        return '';
     }
 '''))
 
 if st.session_state.selected_name in df_display["Naam"].values:
-    # De geselecteerde rij staat nu altijd op index 0
     gb.configure_selection(selection_mode="single", use_checkbox=False, pre_selected_rows=[0])
 else:
     gb.configure_selection(selection_mode="single", use_checkbox=False)
 
 gridOptions = gb.build()
 
-# --- 4. TABEL TONEN & KLIK UITLEZEN ---
 grid_response = AgGrid(
     df_display,
     gridOptions=gridOptions,
     update_mode=GridUpdateMode.SELECTION_CHANGED,
     fit_columns_on_grid_load=True,
-    allow_unsafe_jscode=True, # Nodig om de link werkend te maken
+    allow_unsafe_jscode=True,
     theme='streamlit'
 )
 
