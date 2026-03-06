@@ -21,6 +21,10 @@ def get_coordinates(city_name):
 st.set_page_config(page_title="De Grote Podcastlas", layout="wide")
 st.title("📍 De Grote Podcastlas Explorer")
 
+# Keuze voor 2D of 3D
+weergave = st.radio("Kies kaartweergave:", ["2D (Plat)", "3D (Wereldbol)"], horizontal=True)
+gekozen_projectie = "orthographic" if weergave == "3D (Wereldbol)" else "natural earth"
+
 df = load_data()
 landen_df = df[df["Type"] == "Land"]
 steden_df = df[df["Type"] == "Stad"].copy()
@@ -35,7 +39,7 @@ fig = px.choropleth(
     color="Waarde",
     hover_name="Weergave_Naam",
     hover_data={"Waarde": False, "Locatie": False, "Aflevering": True},
-    projection="orthographic", 
+    projection=gekozen_projectie, 
     color_continuous_scale="greens"
 )
 
