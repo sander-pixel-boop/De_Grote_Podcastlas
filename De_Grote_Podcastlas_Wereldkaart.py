@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
+import base64
+import os
 
 # Initialiseer het geheugen voor de selectie
 if 'selected_name' not in st.session_state:
@@ -17,13 +19,24 @@ def load_data():
         df["Hover_Info"] = df["Aflevering"].str.replace("Afl.", "Aflevering", case=False).str.capitalize()
     return df
 
+@st.cache_data
+def get_base64_image(image_path):
+    if os.path.exists(image_path):
+        with open(image_path, "rb") as img_file:
+            return base64.b64encode(img_file.read()).decode()
+    return ""
+
 st.set_page_config(page_title="De Grote Podcastlas", layout="wide")
 
-# Titel met klikbaar logo in HTML
-titel_html = """
+# Lokaal logo inladen
+logo_base64 = get_base64_image("logodegrotepodcastlas.png")
+img_src = f"data:image/png;base64,{logo_base64}" if logo_base64 else ""
+
+# Titel met klikbaar lokaal logo in HTML
+titel_html = f"""
 <div style="display: flex; align-items: center; margin-bottom: 20px;">
     <a href="https://www.grotepodcastlas.nl/" target="_blank">
-        <img src="https://images.squarespace-cdn.com/content/v1/605b00c62e59e93b1ebed0ad/1616576822453-AOT2H8P3W06P2ZJ17X8I/Podcastlas+logo.png" 
+        <img src="{img_src}" 
              alt="Logo De Grote Podcastlas" 
              style="height: 60px; margin-right: 20px; border-radius: 50%;">
     </a>
@@ -91,7 +104,6 @@ if st.session_state.selected_name:
             if weergave == "3D (Wereldbol)":
                 fig.update_geos(projection_rotation=dict(lon=lon, lat=lat, roll=0))
             else:
-                # Inzoom-factor 5 voor 2D
                 fig.update_geos(center=dict(lon=lon, lat=lat), projection_scale=5)
 
 # --- 2. KAART TONEN & KLIK UITLEZEN ---
