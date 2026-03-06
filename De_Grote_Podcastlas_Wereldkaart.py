@@ -3,7 +3,6 @@ import pandas as pd
 import plotly.express as px
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 
-# Cache is verwijderd zodat je áltijd de nieuwste data.csv inlaadt
 def load_data():
     df = pd.read_csv("data.csv")
     df.columns = df.columns.str.strip().str.replace('^[^a-zA-Z0-9]+', '', regex=True)
@@ -35,7 +34,6 @@ df_display.index = range(1, len(df_display) + 1)
 
 st.subheader("Klik op een rij in de tabel om de locatie te markeren")
 
-# Tabel configuratie
 gb = GridOptionsBuilder.from_dataframe(df_display)
 gb.configure_selection(selection_mode="single", use_checkbox=False)
 gridOptions = gb.build()
@@ -48,16 +46,17 @@ grid_response = AgGrid(
     theme='streamlit'
 )
 
-# Uitlezen van de selectie
+# Veilige check om de ValueError te voorkomen
 selected_name = None
-if grid_response.get('selected_rows'):
-    sel = grid_response['selected_rows']
-    if isinstance(sel, pd.DataFrame) and not sel.empty:
-        selected_name = sel.iloc[0]["Naam"]
-    elif isinstance(sel, list) and len(sel) > 0:
-        selected_name = sel[0]["Naam"]
+sel_rows = grid_response.get('selected_rows')
 
-# Basis kaart setup
+if sel_rows is not None:
+    if isinstance(sel_rows, pd.DataFrame):
+        if not sel_rows.empty:
+            selected_name = sel_rows.iloc[0]["Naam"]
+    elif isinstance(sel_rows, list) and len(sel_rows) > 0:
+        selected_name = sel_rows[0]["Naam"]
+
 gekozen_projectie = "orthographic" if weergave == "3D (Wereldbol)" else "natural earth"
 filtered_df["Highlight"] = filtered_df["Weergave_Naam"].apply(lambda x: 2 if x == selected_name else 1)
 
@@ -91,14 +90,12 @@ if not steden_df.empty:
 
 fig.update_layout(coloraxis_showscale=False, margin={"r":0,"t":0,"l":0,"b":0})
 
-# Logica om de kaart te roteren en in te zoomen
 if selected_name:
     sel_data = df[df["Weergave_Naam"] == selected_name]
     if not sel_data.empty:
         lat = sel_data.iloc[0]["Latitude"]
         lon = sel_data.iloc[0]["Longitude"]
         
-        # Controle of er geldige coördinaten zijn
         if pd.notna(lat) and pd.notna(lon):
             lat, lon = float(lat), float(lon)
             if weergave == "3D (Wereldbol)":
