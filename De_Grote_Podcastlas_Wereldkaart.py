@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, JsCode
+from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 import base64
 import os
 
@@ -32,7 +32,6 @@ st.set_page_config(page_title="De Grote Podcastlas", layout="wide")
 logo_base64 = get_base64_image("logodegrotepodcastlas.png")
 img_src = f"data:image/png;base64,{logo_base64}" if logo_base64 else ""
 
-# Titel met klikbaar lokaal logo in HTML
 titel_html = f"""
 <div style="display: flex; align-items: center; margin-bottom: 20px;">
     <a href="https://www.grotepodcastlas.nl/" target="_blank">
@@ -92,13 +91,11 @@ if not steden_df.empty:
 
 fig.update_layout(coloraxis_showscale=False, margin={"r":0,"t":0,"l":0,"b":0}, height=750)
 
-# Roteren of inzoomen op basis van sessie status
 if st.session_state.selected_name:
     sel_data = df[df["Weergave_Naam"] == st.session_state.selected_name]
     if not sel_data.empty:
         lat = sel_data.iloc[0]["Latitude"]
         lon = sel_data.iloc[0]["Longitude"]
-        
         if pd.notna(lat) and pd.notna(lon):
             lat, lon = float(lat), float(lon)
             if weergave == "3D (Wereldbol)":
@@ -106,25 +103,28 @@ if st.session_state.selected_name:
             else:
                 fig.update_geos(center=dict(lon=lon, lat=lat), projection_scale=5)
 
-# --- 2. KAART TONEN & KLIK UITLEZEN ---
+# --- 2. KAART TONEN ---
 map_selection = st.plotly_chart(fig, use_container_width=True, on_select="rerun", selection_mode="points")
 
 if map_selection and "selection" in map_selection and map_selection["selection"].get("points"):
     point_data = map_selection["selection"]["points"][0]
     clicked_text = point_data.get("hovertext") or point_data.get("text")
-    
     if clicked_text:
-        if "<b>" in clicked_text:
-            clicked_name_clean = clicked_text.split("</b>")[0].replace("<b>", "")
-        else:
-            clicked_name_clean = clicked_text
-
+        clicked_name_clean = clicked_text.split("</b>")[0].replace("<b>", "") if "<b>" in clicked_text else clicked_text
         if st.session_state.selected_name != clicked_name_clean:
             st.session_state.selected_name = clicked_name_clean
             st.rerun()
 
-# --- 3. TABEL OPBOUWEN ---
-df_display = filtered_df[["Weergave_Naam", "Categorie", "Aflevering", "Link"]].copy()
+# --- 3. LUISTER KNOP ---
+if st.session_state.selected_name:
+    sel_row = df[df["Weergave_Naam"] == st.session_state.selected_name]
+    if not sel_row.empty and pd.notna(sel_row.iloc[0].get("Link")):
+        link = sel_row.iloc[0]["Link"]
+        if link:
+            st.link_button(f"🎧 Luister naar de aflevering over {st.session_state.selected_name}", link, type="primary")
+
+# --- 4. TABEL OPBOUWEN ---
+df_display = filtered_df[["Weergave_Naam", "Categorie", "Aflevering"]].copy()
 df_display = df_display.rename(columns={"Weergave_Naam": "Naam"})
 
 if st.session_state.selected_name and st.session_state.selected_name in df_display["Naam"].values:
@@ -135,45 +135,27 @@ if st.session_state.selected_name and st.session_state.selected_name in df_displ
 df_display.index = range(1, len(df_display) + 1)
 
 gb = GridOptionsBuilder.from_dataframe(df_display)
-
-# VERBETERDE RENDERER: Forceert HTML-rendering in de kolom
-gb.configure_column(
-    "Link", 
-    headerName="🎧 Luister", 
-    cellRenderer=JsCode('''
-        function(params) {
-            if (params.value && params.value.includes('http')) {
-                return '<a href="' + params.value + '" target="_blank" style="text-decoration: none; font-weight: bold; color: #1f77b4;">🎧 Luisteren</a>';
-            }
-            return "";
-        }
-    ''')
-)
-
 if st.session_state.selected_name in df_display["Naam"].values:
     gb.configure_selection(selection_mode="single", use_checkbox=False, pre_selected_rows=[0])
 else:
     gb.configure_selection(selection_mode="single", use_checkbox=False)
 
-# Cruciaal: vertel de grid expliciet dat HTML is toegestaan in cellen
 gridOptions = gb.build()
 
-# --- 4. TABEL TONEN & KLIK UITLEZEN ---
 grid_response = AgGrid(
     df_display,
     gridOptions=gridOptions,
     update_mode=GridUpdateMode.SELECTION_CHANGED,
     fit_columns_on_grid_load=True,
-    allow_unsafe_jscode=True,  
     theme='streamlit'
 )
 
+# --- 5. SELECTIE VERWERKEN ---
 selected_rows = grid_response.get('selected_rows')
 if selected_rows is not None:
     clicked_table_name = None
-    if isinstance(selected_rows, pd.DataFrame):
-        if not selected_rows.empty:
-            clicked_table_name = selected_rows.iloc[0]["Naam"]
+    if isinstance(selected_rows, pd.DataFrame) and not selected_rows.empty:
+        clicked_table_name = selected_rows.iloc[0]["Naam"]
     elif isinstance(selected_rows, list) and len(selected_rows) > 0:
         clicked_table_name = selected_rows[0]["Naam"]
 
