@@ -2,3 +2,6 @@ streamlit>=1.35.0
 pandas
 plotly
 streamlit-aggrid
+requests
+beautifulsoup4
+geopy
